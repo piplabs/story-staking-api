@@ -1,0 +1,24 @@
+[blockchain]
+consensus_chain_id = "story-1"
+cometbft_rpc_endpoint = "http://localhost:26657"
+story_api_endpoint = "http://localhost:1317"
+geth_rpc_endpoint = "http://localhost:8545"
+
+[server]
+# Index mode options: reader | writer
+index_mode = "reader"
+# Service mode options: debug | release
+service_mode = "debug"
+service_port = ":8080"
+
+[database]
+# Database engine: postgres | mysql
+engine = "postgres"
+config_file = "config/postgres.yaml"
+
+[cache]
+# Cache engine: redis | freecache
+# * redis (github.com/redis/go-redis/v9)
+# * freecache (github.com/coocood/freecache)
+engine = "redis"
+config_file = "config/redis.yaml"

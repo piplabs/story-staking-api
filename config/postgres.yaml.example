@@ -1,0 +1,11 @@
+db-username: my-user
+# db-password-mode: plain | gcp-secret-manager
+db-password-mode: plain
+db-password: my-secret
+db-host: localhost
+db-port: 5432
+db-name: postgres
+db-max-conns: 100
+db-min-conns: 0
+db-max-conn-lifetime: 6h
+db-max-conn-idle-time: 1m

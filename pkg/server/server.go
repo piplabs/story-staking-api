@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"path/filepath"
 	"sync"
 
 	"github.com/gin-contrib/cors"
@@ -23,6 +24,8 @@ type Server struct {
 	wg     *sync.WaitGroup
 	sf     *singleflight.Group // TODO: use singleflight for all database queries
 
+	rootDir string
+
 	dbOperator    *gorm.DB
 	cacheOperator *redis.Client
 
@@ -30,7 +33,7 @@ type Server struct {
 	indexers   []indexer.Indexer
 }
 
-func NewServer(ctx context.Context, conf *Config) (*Server, error) {
+func NewServer(ctx context.Context, dir string, conf *Config) (*Server, error) {
 	ctxS, cancelS := context.WithCancel(ctx)
 
 	svr := &Server{
@@ -39,6 +42,8 @@ func NewServer(ctx context.Context, conf *Config) (*Server, error) {
 		conf:   conf,
 		wg:     &sync.WaitGroup{},
 		sf:     &singleflight.Group{},
+
+		rootDir: dir,
 	}
 
 	if err := svr.initServices(); err != nil {
@@ -88,14 +93,14 @@ func (s *Server) GracefulQuit() error {
 
 func (s *Server) initServices() error { // TODO: get pwd from secret manager
 	// Connect to database.
-	postgresClient, err := db.NewPostgresClient(s.ctx, s.conf.Database.ConfigFile)
+	postgresClient, err := db.NewPostgresClient(s.ctx, filepath.Join(s.rootDir, s.conf.Database.ConfigFile))
 	if err != nil {
 		return err
 	}
 	s.dbOperator = postgresClient
 
 	// Connect to cache.
-	redisClient, err := cache.NewRedisClient(s.ctx, s.conf.Cache.ConfigFile)
+	redisClient, err := cache.NewRedisClient(s.ctx, filepath.Join(s.rootDir, s.conf.Cache.ConfigFile))
 	if err != nil {
 		return err
 	}

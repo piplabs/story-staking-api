@@ -39,7 +39,7 @@ func main() {
 		log.Fatal().Err(err).Msg("invalid config")
 	}
 
-	svr, err := server.NewServer(ctx, &svrConfig)
+	svr, err := server.NewServer(ctx, *home, &svrConfig)
 	if err != nil {
 		log.Fatal().Err(err).Msg("new story-indexer server failed")
 	}

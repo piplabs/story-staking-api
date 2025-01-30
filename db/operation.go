@@ -15,7 +15,7 @@ type Operation struct {
 
 	StatusOK  bool   `gorm:"column:status_ok" json:"status_ok"`
 	ErrorCode string `gorm:"column:error_code" json:"error_code"`
-	Amount    int64  `gorm:"column:amount" json:"amount"`
+	Amount    string `gorm:"column:amount;type:numeric" json:"amount"`
 }
 
 func GetOperations(db *gorm.DB, evmAddr string, page, perPage int) ([]*Operation, int64, error) {

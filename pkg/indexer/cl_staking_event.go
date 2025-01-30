@@ -2,9 +2,9 @@ package indexer
 
 import (
 	"context"
-	"strconv"
 	"time"
 
+	abcitypes "github.com/cometbft/cometbft/abci/types"
 	lightprovider "github.com/cometbft/cometbft/light/provider"
 	lighthttp "github.com/cometbft/cometbft/light/provider/http"
 	comethttp "github.com/cometbft/cometbft/rpc/client/http"
@@ -176,8 +176,14 @@ func (c *CLStakingEventIndexer) getBlockEvents(blkno int64) ([]*db.CLStakingEven
 		return nil, err
 	}
 
+	blockEvents := make([]abcitypes.Event, 0)
+	for _, tr := range blockResults.TxsResults {
+		blockEvents = append(blockEvents, tr.Events...)
+	}
+	blockEvents = append(blockEvents, blockResults.FinalizeBlockEvents...)
+
 	stakingCLEvents := make([]*db.CLStakingEvent, 0)
-	for _, e := range blockResults.FinalizeBlockEvents {
+	for _, e := range blockEvents {
 		if _, ok := EventSet[e.Type]; !ok {
 			continue
 		}
@@ -186,20 +192,12 @@ func (c *CLStakingEventIndexer) getBlockEvents(blkno int64) ([]*db.CLStakingEven
 
 		errCode, exists := attrMap[AttributeKeyErrorCode]
 
-		amount := int64(0)
-		if amountStr, exists := attrMap[AttributeKeyAmount]; exists {
-			amount, err = strconv.ParseInt(amountStr, 10, 64)
-			if err != nil {
-				return nil, err
-			}
-		}
-
 		stakingCLEvents = append(stakingCLEvents, &db.CLStakingEvent{
 			ELTxHash:    attrMap[AttributeKeyTxHash],
 			BlockHeight: blkno,
 			StatusOK:    !exists,
 			ErrorCode:   errCode,
-			Amount:      amount,
+			Amount:      attrMap[AttributeKeyAmount],
 		})
 	}
 

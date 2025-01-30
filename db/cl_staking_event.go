@@ -8,7 +8,7 @@ type CLStakingEvent struct {
 	BlockHeight int64  `gorm:"not null;column:block_height;index:idx_cl_staking_event_block_height"`
 	StatusOK    bool   `gorm:"not null;column:status_ok"`
 	ErrorCode   string `gorm:"not null;column:error_code"`
-	Amount      int64  `gorm:"not null;column:amount"`
+	Amount      string `gorm:"not null;column:amount;type:numeric"`
 }
 
 func (CLStakingEvent) TableName() string {

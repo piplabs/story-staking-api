@@ -2,6 +2,7 @@ package indexer
 
 import (
 	"context"
+	"fmt"
 	"math/big"
 	"strings"
 	"time"
@@ -96,12 +97,20 @@ func (e *ELRewardIndexer) index(from, to int64) error {
 		for _, w := range blk.Withdrawals() {
 			address := strings.ToLower(w.Address.String())
 
+			newRewards := big.NewInt(int64(w.Amount))
+
 			if _, ok := elRewardsMap[address]; ok {
-				elRewardsMap[address].Amount += int64(w.Amount)
+				curRewards := &big.Int{}
+				curRewards, success := curRewards.SetString(elRewardsMap[address].Amount, 10)
+				if !success {
+					return fmt.Errorf("parse current rewards failed: %s", elRewardsMap[address].Amount)
+				}
+
+				elRewardsMap[address].Amount = curRewards.Add(curRewards, newRewards).String()
 			} else {
 				elRewardsMap[address] = &db.ELReward{
 					Address:          address,
-					Amount:           int64(w.Amount),
+					Amount:           newRewards.String(),
 					LastUpdateHeight: i,
 				}
 			}

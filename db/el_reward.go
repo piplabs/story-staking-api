@@ -8,7 +8,7 @@ import (
 type ELReward struct {
 	ID               uint64 `gorm:"primarykey"`
 	Address          string `gorm:"not null;column:address;index:idx_el_reward_address,unique"` // To lower case
-	Amount           int64  `gorm:"not null;column:amount"`
+	Amount           string `gorm:"not null;column:amount;type:numeric"`
 	LastUpdateHeight int64  `gorm:"not null;column:last_update_height"`
 }
 

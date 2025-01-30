@@ -39,7 +39,7 @@ type OperationsData struct {
 
 type RewardsData struct {
 	Address          string `json:"address"`
-	Amount           int64  `json:"amount"`
+	Amount           string `json:"amount"`
 	LastUpdateHeight int64  `json:"last_update_height"`
 }
 

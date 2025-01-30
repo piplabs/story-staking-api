@@ -19,6 +19,8 @@ var (
 )
 
 func main() {
+	kingpin.Parse()
+
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 

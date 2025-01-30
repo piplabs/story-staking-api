@@ -8,8 +8,8 @@ import (
 
 type ELBlock struct {
 	ID       uint64    `gorm:"primarykey"`
-	Height   int64     `gorm:"not null;column:height;uniqueIndex:idx_el_block_height"`
-	Hash     string    `gorm:"not null;column:hash;uniqueIndex:idx_el_block_hash"`
+	Height   int64     `gorm:"not null;column:height;index:idx_el_block_height,unique"`
+	Hash     string    `gorm:"not null;column:hash;index:idx_el_block_hash,unique"`
 	GasUsed  uint64    `gorm:"not null"`
 	GasLimit uint64    `gorm:"not null"`
 	Time     time.Time `gorm:"not null;column:time"`

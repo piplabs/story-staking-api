@@ -8,8 +8,8 @@ import (
 
 type CLBlock struct {
 	ID              uint64    `gorm:"primarykey"`
-	Height          int64     `gorm:"not null;column:height;uniqueIndex:idx_cl_block_height"`
-	Hash            string    `gorm:"not null;column:hash;uniqueIndex:idx_cl_block_hash"`
+	Height          int64     `gorm:"not null;column:height;index:idx_cl_block_height,unique"`
+	Hash            string    `gorm:"not null;column:hash;index:idx_cl_block_hash,unique"`
 	ProposerAddress string    `gorm:"not null;column:proposer_address"`
 	Time            time.Time `gorm:"not null;column:time"`
 }

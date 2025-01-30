@@ -7,7 +7,7 @@ import (
 
 type IndexPoint struct {
 	ID          uint64 `gorm:"primarykey"`
-	Indexer     string `gorm:"not null;column:indexer;uniqueIndex:idx_index_point_indexer"`
+	Indexer     string `gorm:"not null;column:indexer;index:idx_index_point_indexer,unique"`
 	BlockHeight int64  `gorm:"not null;column:block_height"`
 }
 

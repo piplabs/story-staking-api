@@ -174,7 +174,7 @@ func (s *Server) setupIndexers() error {
 	}
 	s.indexers = append(s.indexers, clBlockIndexer)
 
-	clStakingEventIndexer, err := indexer.NewCLStakinEventIndexer(s.ctx, s.dbOperator, s.cacheOperator, s.conf.Blockchain.ConsensusChainID, s.conf.Blockchain.CometbftRPCEndpoint)
+	clStakingEventIndexer, err := indexer.NewCLStakingEventIndexer(s.ctx, s.dbOperator, s.cacheOperator, s.conf.Blockchain.ConsensusChainID, s.conf.Blockchain.CometbftRPCEndpoint)
 	if err != nil {
 		return err
 	}

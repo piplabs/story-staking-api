@@ -15,7 +15,7 @@ import (
 	"github.com/piplabs/story-indexer/db"
 )
 
-var _ Indexer = (*CLStakinEventIndexer)(nil)
+var _ Indexer = (*CLStakingEventIndexer)(nil)
 
 const (
 	EventTypeSetOperatorFailure               = "set_operator_failure"
@@ -69,7 +69,7 @@ var EventSet = map[string]struct{}{
 	EventTypeUnjailFailure:                    {},
 }
 
-type CLStakinEventIndexer struct {
+type CLStakingEventIndexer struct {
 	ctx context.Context
 
 	dbOperator    *gorm.DB
@@ -79,7 +79,7 @@ type CLStakinEventIndexer struct {
 	lightCometClient lightprovider.Provider
 }
 
-func NewCLStakinEventIndexer(ctx context.Context, dbOperator *gorm.DB, cacheOperator *redis.Client, chainID, rpcEndpoint string) (*CLStakinEventIndexer, error) {
+func NewCLStakingEventIndexer(ctx context.Context, dbOperator *gorm.DB, cacheOperator *redis.Client, chainID, rpcEndpoint string) (*CLStakingEventIndexer, error) {
 	cometClient, err := comethttp.New(rpcEndpoint, "")
 	if err != nil {
 		return nil, err
@@ -90,7 +90,7 @@ func NewCLStakinEventIndexer(ctx context.Context, dbOperator *gorm.DB, cacheOper
 		return nil, err
 	}
 
-	return &CLStakinEventIndexer{
+	return &CLStakingEventIndexer{
 		ctx: ctx,
 
 		dbOperator:    dbOperator,
@@ -101,11 +101,11 @@ func NewCLStakinEventIndexer(ctx context.Context, dbOperator *gorm.DB, cacheOper
 	}, nil
 }
 
-func (c *CLStakinEventIndexer) Name() string {
+func (c *CLStakingEventIndexer) Name() string {
 	return "cl_staking_event"
 }
 
-func (c *CLStakinEventIndexer) Run() {
+func (c *CLStakingEventIndexer) Run() {
 	log.Info().Str("indexer", c.Name()).Msg("Start indexing")
 
 	ticker := time.NewTicker(10 * time.Second)
@@ -143,7 +143,7 @@ func (c *CLStakinEventIndexer) Run() {
 	}
 }
 
-func (c *CLStakinEventIndexer) index(from, to int64) error {
+func (c *CLStakingEventIndexer) index(from, to int64) error {
 	var clStakingEvents []*db.CLStakingEvent
 
 	for i := from; i <= to; i++ {
@@ -171,7 +171,7 @@ func (c *CLStakinEventIndexer) index(from, to int64) error {
 	return nil
 }
 
-func (c *CLStakinEventIndexer) getBlockEvents(blkno int64) ([]*db.CLStakingEvent, error) {
+func (c *CLStakingEventIndexer) getBlockEvents(blkno int64) ([]*db.CLStakingEvent, error) {
 	blockResults, err := c.cometClient.BlockResults(c.ctx, &blkno)
 	if err != nil {
 		return nil, err

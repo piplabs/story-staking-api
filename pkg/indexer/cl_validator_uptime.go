@@ -53,7 +53,7 @@ func NewCLValidatorUptimeIndexer(ctx context.Context, dbOperator *gorm.DB, cache
 }
 
 func (c *CLValidatorUptimeIndexer) Name() string {
-	return "cl_uptime"
+	return "cl_validator_uptime"
 }
 
 func (c *CLValidatorUptimeIndexer) Run() {

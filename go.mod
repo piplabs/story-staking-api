@@ -3,6 +3,7 @@ module github.com/piplabs/story-indexer
 go 1.23.4
 
 require (
+	cloud.google.com/go/secretmanager v1.14.3
 	github.com/BurntSushi/toml v1.4.0
 	github.com/alecthomas/kingpin/v2 v2.4.0
 	github.com/cometbft/cometbft v0.38.12
@@ -15,6 +16,7 @@ require (
 	github.com/redis/go-redis/v9 v9.7.0
 	github.com/rs/zerolog v1.33.0
 	github.com/shopspring/decimal v1.4.0
+	golang.org/x/sync v0.10.0
 	gopkg.in/yaml.v2 v2.4.0
 	gorm.io/driver/postgres v1.5.11
 	gorm.io/gorm v1.25.12
@@ -25,7 +27,6 @@ require (
 	cloud.google.com/go/auth/oauth2adapt v0.2.6 // indirect
 	cloud.google.com/go/compute/metadata v0.6.0 // indirect
 	cloud.google.com/go/iam v1.3.1 // indirect
-	cloud.google.com/go/secretmanager v1.14.3 // indirect
 	cosmossdk.io/api v0.7.5 // indirect
 	cosmossdk.io/collections v0.4.0 // indirect
 	cosmossdk.io/core v0.12.0 // indirect
@@ -148,6 +149,7 @@ require (
 	github.com/kr/pretty v0.3.1 // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
+	github.com/libp2p/go-buffer-pool v0.1.0 // indirect
 	github.com/linxGnu/grocksdb v1.9.3 // indirect
 	github.com/magiconair/properties v1.8.7 // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
@@ -208,7 +210,6 @@ require (
 	golang.org/x/exp v0.0.0-20240416160154-fe59bbe5cc7f // indirect
 	golang.org/x/net v0.34.0 // indirect
 	golang.org/x/oauth2 v0.24.0 // indirect
-	golang.org/x/sync v0.10.0 // indirect
 	golang.org/x/sys v0.29.0 // indirect
 	golang.org/x/term v0.28.0 // indirect
 	golang.org/x/text v0.21.0 // indirect
@@ -229,6 +230,14 @@ require (
 )
 
 replace (
+	cosmossdk.io/core v0.12.0 => cosmossdk.io/core v0.11.0
+
+	cosmossdk.io/x/evidence => github.com/piplabs/cosmos-sdk/x/evidence v0.1.1-piplabs-v1.0
+
+	github.com/btcsuite/btcd/btcec/v2 v2.3.4 => github.com/btcsuite/btcd/btcec/v2 v2.2.0
+
+	github.com/cometbft/cometbft => github.com/cometbft/cometbft v0.38.9
+
 	github.com/cosmos/cosmos-sdk => github.com/piplabs/cosmos-sdk v0.50.10-piplabs-v1.0
 
 	github.com/syndtr/goleveldb => github.com/syndtr/goleveldb v1.0.1-0.20210819022825-2ae1ddf74ef7

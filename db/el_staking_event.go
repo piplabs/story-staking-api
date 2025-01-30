@@ -4,7 +4,7 @@ import "gorm.io/gorm"
 
 type ELStakingEvent struct {
 	ID                  uint64 `gorm:"primarykey"`
-	TxHash              string `gorm:"not null;column:tx_hash;uniqueIndex:idx_el_staking_event_tx_hash"`
+	TxHash              string `gorm:"not null;column:tx_hash;index:idx_el_staking_event_tx_hash,unique"`
 	Address             string `gorm:"not null;column:address;index:idx_el_staking_event_address_block_height,priority:1"` // To lower case
 	BlockHeight         int64  `gorm:"not null;column:block_height;index:idx_el_staking_event_address_block_height,priority:2"`
 	EventType           string `gorm:"not null;column:event_type"`

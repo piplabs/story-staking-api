@@ -1,12 +1,12 @@
 [blockchain]
-consensus_chain_id = "story-1"
+consensus_chain_id = "story-localnet"
 cometbft_rpc_endpoint = "http://localhost:26657"
 story_api_endpoint = "http://localhost:1317"
 geth_rpc_endpoint = "http://localhost:8545"
 
 [server]
 # Index mode options: reader | writer
-index_mode = "reader"
+index_mode = "writer"
 # Service mode options: debug | release
 service_mode = "debug"
 service_port = ":8080"

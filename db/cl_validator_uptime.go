@@ -7,14 +7,14 @@ import (
 
 type CLValidatorUptime struct {
 	ID         uint64 `gorm:"primarykey"`
-	EVMAddress string `gorm:"not null;column:evm_address;uniqueIndex:idx_cl_uptime_evm_address"` // To lower case
+	EVMAddress string `gorm:"not null;column:evm_address;index:idx_cl_validator_uptime_evm_address,unique"` // To lower case
 	ActiveFrom int64  `gorm:"not null;column:active_from"`
 	ActiveTo   int64  `gorm:"not null;column:active_to"`
 	VoteCount  int64  `gorm:"not null;column:vote_count"`
 }
 
 func (CLValidatorUptime) TableName() string {
-	return "cl_uptimes"
+	return "cl_validator_uptimes"
 }
 
 func BatchUpsertCLUptime(db *gorm.DB, indexer string, clUptimes []*CLValidatorUptime, height int64) error {
@@ -24,22 +24,18 @@ func BatchUpsertCLUptime(db *gorm.DB, indexer string, clUptimes []*CLValidatorUp
 				Columns: []clause.Column{{Name: "evm_address"}},
 				DoUpdates: clause.Assignments(map[string]interface{}{
 					"active_from": gorm.Expr(`
-                        CASE
-                            WHEN active_to + 1 != ? THEN ?
-                            ELSE active_from
-                        END`, uptime.ActiveFrom, uptime.ActiveFrom),
-					"active_to": gorm.Expr(`
-                        CASE
-                            WHEN active_to + 1 = ? THEN ?
-                            ELSE ?
-                        END`, uptime.ActiveFrom, uptime.ActiveTo, uptime.ActiveTo),
+						CASE
+							WHEN cl_validator_uptimes.active_to + 1 = excluded.active_from THEN cl_validator_uptimes.active_from
+							ELSE excluded.active_from
+						END`),
+					"active_to": gorm.Expr(`excluded.active_to`),
 					"vote_count": gorm.Expr(`
-                        CASE
-                            WHEN active_to + 1 = ? THEN vote_count + ?
-                            ELSE ?
-                        END`, uptime.ActiveFrom, uptime.VoteCount, uptime.VoteCount),
+						CASE
+							WHEN cl_validator_uptimes.active_to + 1 = excluded.active_from THEN cl_validator_uptimes.vote_count + excluded.vote_count
+							ELSE excluded.vote_count
+						END`),
 				}),
-			}).Create(uptime).Error
+			}).Create(&uptime).Error
 
 			if err != nil {
 				return err

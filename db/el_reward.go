@@ -7,7 +7,7 @@ import (
 
 type ELReward struct {
 	ID               uint64 `gorm:"primarykey"`
-	Address          string `gorm:"not null;column:address;uniqueIndex:idx_el_reward_address"` // To lower case
+	Address          string `gorm:"not null;column:address;index:idx_el_reward_address,unique"` // To lower case
 	Amount           int64  `gorm:"not null;column:amount"`
 	LastUpdateHeight int64  `gorm:"not null;column:last_update_height"`
 }
@@ -21,8 +21,8 @@ func BatchUpsertELRewards(db *gorm.DB, indexer string, rewards []*ELReward, heig
 		if err := tx.Clauses(clause.OnConflict{
 			Columns: []clause.Column{{Name: "address"}},
 			DoUpdates: clause.Assignments(map[string]interface{}{
-				"amount":             gorm.Expr("amount + excluded.amount"),
-				"last_update_height": gorm.Expr("GREATEST(last_update_height, excluded.last_update_height)"),
+				"amount":             gorm.Expr("el_rewards.amount + excluded.amount"),
+				"last_update_height": gorm.Expr("GREATEST(el_rewards.last_update_height, excluded.last_update_height)"),
 			}),
 		}).CreateInBatches(rewards, 100).Error; err != nil {
 			return err

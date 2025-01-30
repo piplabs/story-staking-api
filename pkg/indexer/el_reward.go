@@ -123,17 +123,16 @@ func (e *ELRewardIndexer) index(from, to int64) error {
 		}
 	}
 
-	if len(elRewardsMap) > 0 {
-		elRewards := make([]*db.ELReward, 0, len(elRewardsMap))
-		for _, v := range elRewardsMap {
-			elRewards = append(elRewards, v)
-		}
+	// Handle remaining entries, even if there are no entries, we also need to update the index point.
+	elRewards := make([]*db.ELReward, 0, len(elRewardsMap))
+	for _, v := range elRewardsMap {
+		elRewards = append(elRewards, v)
+	}
 
-		e.invalidateCache(elRewards)
+	e.invalidateCache(elRewards)
 
-		if err := db.BatchUpsertELRewards(e.dbOperator, e.Name(), elRewards, to); err != nil {
-			return err
-		}
+	if err := db.BatchUpsertELRewards(e.dbOperator, e.Name(), elRewards, to); err != nil {
+		return err
 	}
 
 	return nil

@@ -107,10 +107,9 @@ func (c *CLBlockIndexer) index(from, to int64) error {
 		}
 	}
 
-	if len(blocks) > 0 {
-		if err := db.BatchCreateCLBlocks(c.dbOperator, c.Name(), blocks, to); err != nil {
-			return err
-		}
+	// Handle remaining entries, even if there are no entries, we also need to update the index point.
+	if err := db.BatchCreateCLBlocks(c.dbOperator, c.Name(), blocks, to); err != nil {
+		return err
 	}
 
 	return nil

@@ -162,10 +162,9 @@ func (c *CLStakingEventIndexer) index(from, to int64) error {
 		}
 	}
 
-	if len(clStakingEvents) > 0 {
-		if err := db.BatchCreateCLStakingEvents(c.dbOperator, c.Name(), clStakingEvents, to); err != nil {
-			return err
-		}
+	// Handle remaining entries, even if there are no entries, we also need to update the index point.
+	if err := db.BatchCreateCLStakingEvents(c.dbOperator, c.Name(), clStakingEvents, to); err != nil {
+		return err
 	}
 
 	return nil

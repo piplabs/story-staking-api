@@ -108,10 +108,9 @@ func (e *ELBlockIndexer) index(from, to int64) error {
 		}
 	}
 
-	if len(elBlocks) > 0 {
-		if err := db.BatchCreateELBlocks(e.dbOperator, e.Name(), elBlocks, to); err != nil {
-			return err
-		}
+	// Handle remaining entries, even if there are no entries, we also need to update the index point.
+	if err := db.BatchCreateELBlocks(e.dbOperator, e.Name(), elBlocks, to); err != nil {
+		return err
 	}
 
 	return nil

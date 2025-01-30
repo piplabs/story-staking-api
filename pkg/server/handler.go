@@ -504,7 +504,7 @@ func (s *Server) StakingValidatorDelegatorPeriodDelegationHandler() gin.HandlerF
 
 		valAddr := strings.ToLower(c.Param("validator_address"))
 		delAddr := strings.ToLower(c.Param("delegator_address"))
-		delID := c.Param("delegation_id")
+		delID := c.Param("period_delegation_id")
 		if valAddr == "" || delAddr == "" || delID == "" {
 			c.JSON(http.StatusOK, Response{
 				Code:  http.StatusBadRequest,

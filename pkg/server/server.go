@@ -171,7 +171,7 @@ func (s *Server) setupGinService() {
 		apiGroup.GET("/staking/validators/:validator_address/delegations", s.StakingValidatorDelegationsHandler())
 		apiGroup.GET("/staking/validators/:validator_address/delegations/:delegator_address", s.StakingDelegationHandler())
 		apiGroup.GET("/staking/validators/:validator_address/delegators/:delegator_address/period_delegations", s.StakingValidatorDelegatorPeriodDelegationsHandler())
-		apiGroup.GET("/staking/validators/:validator_address/delegators/:delegator_address/period_delegations/:period_id", s.StakingValidatorDelegatorPeriodDelegationHandler())
+		apiGroup.GET("/staking/validators/:validator_address/delegators/:delegator_address/period_delegations/:period_delegation_id", s.StakingValidatorDelegatorPeriodDelegationHandler())
 
 		apiGroup.GET("/staking/delegations/:delegator_address", s.StakingDelegatorDelegationsHandler())
 

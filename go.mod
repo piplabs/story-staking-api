@@ -232,7 +232,7 @@ require (
 replace (
 	cosmossdk.io/core v0.12.0 => cosmossdk.io/core v0.11.0
 
-	cosmossdk.io/x/evidence => github.com/piplabs/cosmos-sdk/x/evidence v0.1.1-piplabs-v1.0
+	cosmossdk.io/x/evidence => github.com/piplabs/cosmos-sdk/x/evidence v0.1.1-piplabs-v1.1
 
 	github.com/btcsuite/btcd/btcec/v2 v2.3.4 => github.com/btcsuite/btcd/btcec/v2 v2.2.0
 

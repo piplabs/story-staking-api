@@ -18,11 +18,21 @@ import (
 func ParsePaginationParams(c *gin.Context) map[string]string {
 	params := make(map[string]string)
 
-	params["pagination.key"] = c.Query("pagination.key")
-	params["pagination.offset"] = c.Query("pagination.offset")
-	params["pagination.limit"] = c.Query("pagination.limit")
-	params["pagination.count_total"] = c.Query("pagination.count_total")
-	params["pagination.reverse"] = c.Query("pagination.reverse")
+	if key := c.Query("pagination.key"); key != "" {
+		params["pagination.key"] = key
+	}
+	if offset := c.Query("pagination.offset"); offset != "" {
+		params["pagination.offset"] = offset
+	}
+	if limit := c.Query("pagination.limit"); limit != "" {
+		params["pagination.limit"] = limit
+	}
+	if countTotal := c.Query("pagination.count_total"); countTotal != "" {
+		params["pagination.count_total"] = countTotal
+	}
+	if reverse := c.Query("pagination.reverse"); reverse != "" {
+		params["pagination.reverse"] = reverse
+	}
 
 	return params
 }

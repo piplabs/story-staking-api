@@ -2,6 +2,8 @@ package server
 
 import (
 	"context"
+	"errors"
+	"net/http"
 	"path/filepath"
 	"sync"
 
@@ -30,6 +32,7 @@ type Server struct {
 	cacheOperator *redis.Client
 
 	ginService *gin.Engine
+	httpServer *http.Server
 	indexers   []indexer.Indexer
 }
 
@@ -60,7 +63,7 @@ func (s *Server) Run() {
 		s.wg.Add(1)
 		go func() {
 			defer s.wg.Done()
-			if err := s.ginService.Run(s.conf.Server.ServicePort); err != nil {
+			if err := s.httpServer.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 				log.Error().Err(err).Msg("story-indexer server stopped")
 			}
 		}()
@@ -79,6 +82,9 @@ func (s *Server) Run() {
 
 func (s *Server) GracefulQuit() error {
 	s.cancel()
+	if s.conf.Server.IndexMode == IndexModeReader {
+		_ = s.httpServer.Shutdown(context.Background())
+	}
 	s.wg.Wait()
 
 	_ = s.cacheOperator.Close()
@@ -138,6 +144,7 @@ func (s *Server) initServices() error { // TODO: get pwd from secret manager
 
 func (s *Server) setupGinService() {
 	gin.SetMode(s.conf.Server.ServiceMode)
+
 	s.ginService = gin.New()
 	s.ginService.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"*"},
@@ -169,6 +176,11 @@ func (s *Server) setupGinService() {
 		apiGroup.GET("/staking/delegations/:delegator_address", s.StakingDelegatorDelegationsHandler())
 
 		apiGroup.GET("/staking/delegators/:delegator_address/unbonding_delegations", s.StakingDelegatorUnbondingDelegationsHandler())
+	}
+
+	s.httpServer = &http.Server{
+		Addr:    s.conf.Server.ServicePort,
+		Handler: s.ginService,
 	}
 }
 

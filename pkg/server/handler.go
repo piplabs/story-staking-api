@@ -165,7 +165,16 @@ func (s *Server) OperationsHandler() gin.HandlerFunc {
 			return
 		}
 
-		page, err := strconv.Atoi(c.Query("page"))
+		pageStr := c.Query("page")
+		if pageStr == "" {
+			pageStr = "1"
+		}
+		perPageStr := c.Query("per_page")
+		if perPageStr == "" {
+			perPageStr = "100"
+		}
+
+		page, err := strconv.Atoi(pageStr)
 		if err != nil {
 			logger.Error().Err(err).Msg("failed to parse page")
 			c.JSON(http.StatusOK, Response{
@@ -175,7 +184,7 @@ func (s *Server) OperationsHandler() gin.HandlerFunc {
 			return
 		}
 
-		perPage, err := strconv.Atoi(c.Query("per_page"))
+		perPage, err := strconv.Atoi(perPageStr)
 		if err != nil {
 			logger.Error().Err(err).Msg("failed to parse per_page")
 			c.JSON(http.StatusOK, Response{

@@ -11,6 +11,12 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+type QueryResponse[T any] struct {
+	Code  int    `json:"code"`
+	Msg   T      `json:"msg"`
+	Error string `json:"error"`
+}
+
 type Pagination struct {
 	NextKey string `json:"next_key"`
 	Total   string `json:"total"`
@@ -40,15 +46,6 @@ type StakingPoolResponse struct {
 	} `json:"pool"`
 }
 
-type ValidatorsResponse struct {
-	Validators []ValidatorInfo `json:"validators"`
-	Pagination Pagination      `json:"pagination"`
-}
-
-type ValidatorResponse struct {
-	Validator ValidatorInfo `json:"validator"`
-}
-
 type ValidatorInfo struct {
 	OperatorAddress string `json:"operator_address"`
 	ConsensusPubKey struct {
@@ -64,46 +61,59 @@ type ValidatorInfo struct {
 	} `json:"description"`
 }
 
-type DelegationsResponse struct {
-	DelegationResponses []DelegationResponse `json:"delegation_responses"`
-	Pagination          Pagination           `json:"pagination"`
+type ValidatorResponse struct {
+	Validator ValidatorInfo `json:"validator"`
+}
+
+type ValidatorsResponse struct {
+	Validators []ValidatorInfo `json:"validators"`
+	Pagination Pagination      `json:"pagination"`
+}
+
+type DelegationInfo struct {
+	Delegation struct {
+		DelegatorAddress string `json:"delegator_address"`
+		ValidatorAddress string `json:"validator_address"`
+		Shares           string `json:"shares"`
+		RewardsShares    string `json:"rewards_shares"`
+	} `json:"delegation"`
+	Balance struct {
+		Denom  string `json:"denom"`
+		Amount string `json:"amount"`
+	} `json:"balance"`
 }
 
 type DelegationResponse struct {
-	DelegationResponse struct {
-		Delegation struct {
-			DelegatorAddress string `json:"delegator_address"`
-			ValidatorAddress string `json:"validator_address"`
-			Shares           string `json:"shares"`
-			RewardsShares    string `json:"rewards_shares"`
-		} `json:"delegation"`
-		Balance struct {
-			Denom  string `json:"denom"`
-			Amount string `json:"amount"`
-		} `json:"balance"`
-	} `json:"delegation_response"`
+	DelegationResponse DelegationInfo `json:"delegation_response"`
+}
+
+type DelegationsResponse struct {
+	DelegationResponses []DelegationInfo `json:"delegation_responses"`
+	Pagination          Pagination       `json:"pagination"`
+}
+
+type PeriodDelegationInfo struct {
+	PeriodDelegation struct {
+		DelegatorAddress   string `json:"delegator_address"`
+		ValidatorAddress   string `json:"validator_address"`
+		PeriodDelegationID string `json:"period_delegation_id"`
+		Shares             string `json:"shares"`
+		RewardsShares      string `json:"rewards_shares"`
+		EndTime            string `json:"end_time"`
+	} `json:"period_delegation"`
+	Balance struct {
+		Denom  string `json:"denom"`
+		Amount string `json:"amount"`
+	} `json:"balance"`
 }
 
 type PeriodDelegationResponse struct {
-	PeriodDelegationResponse struct {
-		PeriodDelegation struct {
-			DelegatorAddress   string `json:"delegator_address"`
-			ValidatorAddress   string `json:"validator_address"`
-			PeriodDelegationID string `json:"period_delegation_id"`
-			Shares             string `json:"shares"`
-			RewardsShares      string `json:"rewards_shares"`
-			EndTime            string `json:"end_time"`
-		} `json:"period_delegation"`
-		Balance struct {
-			Denom  string `json:"denom"`
-			Amount string `json:"amount"`
-		} `json:"balance"`
-	} `json:"period_delegation_response"`
+	PeriodDelegationResponse PeriodDelegationInfo `json:"period_delegation_response"`
 }
 
 type PeriodDelegationsResponse struct {
-	PeriodDelegationResponses []PeriodDelegationResponse `json:"period_delegation_responses"`
-	Pagination                Pagination                 `json:"pagination"`
+	PeriodDelegationResponses []PeriodDelegationInfo `json:"period_delegation_responses"`
+	Pagination                Pagination             `json:"pagination"`
 }
 
 func ParsePaginationParams(c *gin.Context) map[string]string {
@@ -141,12 +151,6 @@ type UnbondingDelegationsResponse struct {
 		} `json:"entries"`
 	} `json:"unbonding_responses"`
 	Pagination Pagination `json:"pagination"`
-}
-
-type QueryResponse[T any] struct {
-	Code  int    `json:"code"`
-	Msg   T      `json:"msg"`
-	Error string `json:"error"`
 }
 
 func GetDistributionParams(apiEndpoint string) (*QueryResponse[DistributionParamsResponse], error) {

@@ -307,7 +307,7 @@ func (s *Server) StakingValidatorsHandler() gin.HandlerFunc {
 
 		valAddrs := make([]string, 0, len(stakingValidatorsResp.Msg.Validators))
 		for _, val := range stakingValidatorsResp.Msg.Validators {
-			valAddrs = append(valAddrs, strings.ToLower(val.Validator.OperatorAddress))
+			valAddrs = append(valAddrs, strings.ToLower(val.OperatorAddress))
 		}
 
 		clUptimes, err := db.GetCLUptimes(s.dbOperator, valAddrs...)
@@ -331,8 +331,8 @@ func (s *Server) StakingValidatorsHandler() gin.HandlerFunc {
 		validators := make([]StakingValidatorData, 0, len(stakingValidatorsResp.Msg.Validators))
 		for _, val := range stakingValidatorsResp.Msg.Validators {
 			validators = append(validators, StakingValidatorData{
-				ValidatorInfo: val.Validator,
-				Uptime:        clUptimesMap[strings.ToLower(val.Validator.OperatorAddress)],
+				ValidatorInfo: val,
+				Uptime:        clUptimesMap[strings.ToLower(val.OperatorAddress)],
 			})
 		}
 

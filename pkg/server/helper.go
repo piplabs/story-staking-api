@@ -41,8 +41,8 @@ type StakingPoolResponse struct {
 }
 
 type ValidatorsResponse struct {
-	Validators []ValidatorResponse `json:"validators"`
-	Pagination Pagination          `json:"pagination"`
+	Validators []ValidatorInfo `json:"validators"`
+	Pagination Pagination      `json:"pagination"`
 }
 
 type ValidatorResponse struct {
@@ -233,10 +233,13 @@ func GetStakingValidators(apiEndpoint string, params map[string]string) (*QueryR
 		return nil, err
 	}
 
+	fmt.Println("fuck", string(bodyBytes))
+
 	var res QueryResponse[ValidatorsResponse]
 	if err := json.Unmarshal(bodyBytes, &res); err != nil {
 		return nil, err
 	}
+	fmt.Printf("fuck %+v\n", res)
 
 	if res.Code != http.StatusOK {
 		return nil, errors.New(res.Error)

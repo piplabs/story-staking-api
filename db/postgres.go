@@ -9,7 +9,7 @@ import (
 
 	secretmanager "cloud.google.com/go/secretmanager/apiv1"
 	"cloud.google.com/go/secretmanager/apiv1/secretmanagerpb"
-	"gopkg.in/yaml.v2"
+	yaml "gopkg.in/yaml.v2"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"

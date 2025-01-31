@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 
-	"github.com/redis/go-redis/v9"
+	redis "github.com/redis/go-redis/v9"
 	"github.com/rs/zerolog/log"
 
 	"github.com/piplabs/story-indexer/cache"

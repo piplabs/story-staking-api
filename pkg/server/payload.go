@@ -1,9 +1,6 @@
 package server
 
 import (
-	querytypes "github.com/cosmos/cosmos-sdk/types/query"
-	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-
 	"github.com/piplabs/story-indexer/db"
 )
 
@@ -44,11 +41,11 @@ type RewardsData struct {
 }
 
 type StakingValidatorData struct {
-	stakingtypes.Validator
+	ValidatorInfo
 	Uptime string `json:"uptime"`
 }
 
 type StakingValidatorsData struct {
-	Validators []StakingValidatorData   `json:"validators"`
-	Pagination *querytypes.PageResponse `json:"pagination"`
+	Validators []StakingValidatorData `json:"validators"`
+	Pagination Pagination             `json:"pagination"`
 }

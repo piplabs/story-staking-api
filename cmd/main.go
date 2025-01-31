@@ -7,7 +7,7 @@ import (
 	"syscall"
 
 	"github.com/BurntSushi/toml"
-	"github.com/alecthomas/kingpin/v2"
+	kingpin "github.com/alecthomas/kingpin/v2"
 	"github.com/rs/zerolog/log"
 
 	"github.com/piplabs/story-indexer/pkg/server"

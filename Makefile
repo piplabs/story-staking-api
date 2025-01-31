@@ -1,8 +1,5 @@
 lint:
-	@golangci-lint run --allow-parallel-runners
-
-lint-fix:
-	@golangci-lint run --fix --allow-parallel-runners
+	goimports-reviser -rm-unused -set-alias -format ./...
 
 run:
 	go run ./cmd/main.go

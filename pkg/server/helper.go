@@ -8,12 +8,103 @@ import (
 	"net/http"
 	"net/url"
 
-	distributiontypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
-	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/gin-gonic/gin"
-
-	minttypes "github.com/piplabs/story/client/x/mint/types"
 )
+
+type Pagination struct {
+	NextKey string `json:"next_key"`
+	Total   string `json:"total"`
+}
+
+type DistributionParamsResponse struct {
+	Params struct {
+		Ubi               string `json:"ubi"`
+		MintDenom         string `json:"mint_denom"`
+		InflationsPerYear string `json:"inflations_per_year"`
+		BlocksPerYear     string `json:"blocks_per_year"`
+	} `json:"params"`
+}
+
+type MintParamsResponse struct {
+	Params struct {
+		MintDenom         string `json:"mint_denom"`
+		InflationsPerYear string `json:"inflations_per_year"`
+		BlocksPerYear     string `json:"blocks_per_year"`
+	} `json:"params"`
+}
+
+type StakingPoolResponse struct {
+	Pool struct {
+		NotBondedTokens string `json:"not_bonded_tokens"`
+		BondedTokens    string `json:"bonded_tokens"`
+	} `json:"pool"`
+}
+
+type ValidatorsResponse struct {
+	Validators []ValidatorResponse `json:"validators"`
+	Pagination Pagination          `json:"pagination"`
+}
+
+type ValidatorResponse struct {
+	Validator ValidatorInfo `json:"validator"`
+}
+
+type ValidatorInfo struct {
+	OperatorAddress string `json:"operator_address"`
+	ConsensusPubKey struct {
+		Type  string `json:"type"`
+		Value string `json:"value"`
+	} `json:"consensus_pubkey"`
+	Jailed          bool   `json:"jailed"`
+	Status          int    `json:"status"`
+	Tokens          string `json:"tokens"`
+	DelegatorShares string `json:"delegator_shares"`
+	Description     struct {
+		Moniker string `json:"moniker"`
+	} `json:"description"`
+}
+
+type DelegationsResponse struct {
+	DelegationResponses []DelegationResponse `json:"delegation_responses"`
+	Pagination          Pagination           `json:"pagination"`
+}
+
+type DelegationResponse struct {
+	DelegationResponse struct {
+		Delegation struct {
+			DelegatorAddress string `json:"delegator_address"`
+			ValidatorAddress string `json:"validator_address"`
+			Shares           string `json:"shares"`
+			RewardsShares    string `json:"rewards_shares"`
+		} `json:"delegation"`
+		Balance struct {
+			Denom  string `json:"denom"`
+			Amount string `json:"amount"`
+		} `json:"balance"`
+	} `json:"delegation_response"`
+}
+
+type PeriodDelegationResponse struct {
+	PeriodDelegationResponse struct {
+		PeriodDelegation struct {
+			DelegatorAddress   string `json:"delegator_address"`
+			ValidatorAddress   string `json:"validator_address"`
+			PeriodDelegationID string `json:"period_delegation_id"`
+			Shares             string `json:"shares"`
+			RewardsShares      string `json:"rewards_shares"`
+			EndTime            string `json:"end_time"`
+		} `json:"period_delegation"`
+		Balance struct {
+			Denom  string `json:"denom"`
+			Amount string `json:"amount"`
+		} `json:"balance"`
+	} `json:"period_delegation_response"`
+}
+
+type PeriodDelegationsResponse struct {
+	PeriodDelegationResponses []PeriodDelegationResponse `json:"period_delegation_responses"`
+	Pagination                Pagination                 `json:"pagination"`
+}
 
 func ParsePaginationParams(c *gin.Context) map[string]string {
 	params := make(map[string]string)
@@ -37,13 +128,28 @@ func ParsePaginationParams(c *gin.Context) map[string]string {
 	return params
 }
 
+type UnbondingDelegationsResponse struct {
+	UnbondingResponses []struct {
+		DelegatorAddress string `json:"delegator_address"`
+		ValidatorAddress string `json:"validator_address"`
+		Entries          []struct {
+			CreationHeight string `json:"creation_height"`
+			CompletionTime string `json:"completion_time"`
+			InitialBalance string `json:"initial_balance"`
+			Balance        string `json:"balance"`
+			UnbondingID    string `json:"unbonding_id"`
+		} `json:"entries"`
+	} `json:"unbonding_responses"`
+	Pagination Pagination `json:"pagination"`
+}
+
 type QueryResponse[T any] struct {
 	Code  int    `json:"code"`
 	Msg   T      `json:"msg"`
 	Error string `json:"error"`
 }
 
-func GetDistributionParams(apiEndpoint string) (*QueryResponse[distributiontypes.QueryParamsResponse], error) {
+func GetDistributionParams(apiEndpoint string) (*QueryResponse[DistributionParamsResponse], error) {
 	resp, err := callAPI(apiEndpoint, "/distribution/params", nil)
 	if err != nil {
 		return nil, err
@@ -55,7 +161,7 @@ func GetDistributionParams(apiEndpoint string) (*QueryResponse[distributiontypes
 		return nil, err
 	}
 
-	var res QueryResponse[distributiontypes.QueryParamsResponse]
+	var res QueryResponse[DistributionParamsResponse]
 	if err := json.Unmarshal(bodyBytes, &res); err != nil {
 		return nil, err
 	}
@@ -67,7 +173,7 @@ func GetDistributionParams(apiEndpoint string) (*QueryResponse[distributiontypes
 	return &res, nil
 }
 
-func GetMintParams(apiEndpoint string) (*QueryResponse[minttypes.QueryParamsResponse], error) {
+func GetMintParams(apiEndpoint string) (*QueryResponse[MintParamsResponse], error) {
 	resp, err := callAPI(apiEndpoint, "/mint/params", nil)
 	if err != nil {
 		return nil, err
@@ -79,7 +185,7 @@ func GetMintParams(apiEndpoint string) (*QueryResponse[minttypes.QueryParamsResp
 		return nil, err
 	}
 
-	var res QueryResponse[minttypes.QueryParamsResponse]
+	var res QueryResponse[MintParamsResponse]
 	if err := json.Unmarshal(bodyBytes, &res); err != nil {
 		return nil, err
 	}
@@ -91,7 +197,7 @@ func GetMintParams(apiEndpoint string) (*QueryResponse[minttypes.QueryParamsResp
 	return &res, nil
 }
 
-func GetStakingPool(apiEndpoint string) (*QueryResponse[stakingtypes.QueryPoolResponse], error) {
+func GetStakingPool(apiEndpoint string) (*QueryResponse[StakingPoolResponse], error) {
 	resp, err := callAPI(apiEndpoint, "/staking/pool", nil)
 	if err != nil {
 		return nil, err
@@ -103,7 +209,7 @@ func GetStakingPool(apiEndpoint string) (*QueryResponse[stakingtypes.QueryPoolRe
 		return nil, err
 	}
 
-	var res QueryResponse[stakingtypes.QueryPoolResponse]
+	var res QueryResponse[StakingPoolResponse]
 	if err := json.Unmarshal(bodyBytes, &res); err != nil {
 		return nil, err
 	}
@@ -115,7 +221,7 @@ func GetStakingPool(apiEndpoint string) (*QueryResponse[stakingtypes.QueryPoolRe
 	return &res, nil
 }
 
-func GetStakingValidators(apiEndpoint string, params map[string]string) (*QueryResponse[stakingtypes.QueryValidatorsResponse], error) {
+func GetStakingValidators(apiEndpoint string, params map[string]string) (*QueryResponse[ValidatorsResponse], error) {
 	resp, err := callAPI(apiEndpoint, "/staking/validators", params)
 	if err != nil {
 		return nil, err
@@ -127,7 +233,7 @@ func GetStakingValidators(apiEndpoint string, params map[string]string) (*QueryR
 		return nil, err
 	}
 
-	var res QueryResponse[stakingtypes.QueryValidatorsResponse]
+	var res QueryResponse[ValidatorsResponse]
 	if err := json.Unmarshal(bodyBytes, &res); err != nil {
 		return nil, err
 	}
@@ -139,7 +245,7 @@ func GetStakingValidators(apiEndpoint string, params map[string]string) (*QueryR
 	return &res, nil
 }
 
-func GetStakingValidator(apiEndpoint, validatorAddr string) (*QueryResponse[stakingtypes.QueryValidatorResponse], error) {
+func GetStakingValidator(apiEndpoint, validatorAddr string) (*QueryResponse[ValidatorResponse], error) {
 	resp, err := callAPI(apiEndpoint, fmt.Sprintf("/staking/validators/%s", validatorAddr), nil)
 	if err != nil {
 		return nil, err
@@ -151,7 +257,7 @@ func GetStakingValidator(apiEndpoint, validatorAddr string) (*QueryResponse[stak
 		return nil, err
 	}
 
-	var res QueryResponse[stakingtypes.QueryValidatorResponse]
+	var res QueryResponse[ValidatorResponse]
 	if err := json.Unmarshal(bodyBytes, &res); err != nil {
 		return nil, err
 	}
@@ -163,7 +269,7 @@ func GetStakingValidator(apiEndpoint, validatorAddr string) (*QueryResponse[stak
 	return &res, nil
 }
 
-func GetStakingValidatorDelegations(apiEndpoint, validatorAddr string, params map[string]string) (*QueryResponse[stakingtypes.QueryValidatorDelegationsResponse], error) {
+func GetStakingValidatorDelegations(apiEndpoint, validatorAddr string, params map[string]string) (*QueryResponse[DelegationsResponse], error) {
 	resp, err := callAPI(apiEndpoint, fmt.Sprintf("/staking/validators/%s/delegations", validatorAddr), params)
 	if err != nil {
 		return nil, err
@@ -175,7 +281,7 @@ func GetStakingValidatorDelegations(apiEndpoint, validatorAddr string, params ma
 		return nil, err
 	}
 
-	var res QueryResponse[stakingtypes.QueryValidatorDelegationsResponse]
+	var res QueryResponse[DelegationsResponse]
 	if err := json.Unmarshal(bodyBytes, &res); err != nil {
 		return nil, err
 	}
@@ -187,7 +293,7 @@ func GetStakingValidatorDelegations(apiEndpoint, validatorAddr string, params ma
 	return &res, nil
 }
 
-func GetStakingDelegation(apiEndpoint, validatorAddr, delegatorAddr string) (*QueryResponse[stakingtypes.QueryDelegationResponse], error) {
+func GetStakingDelegation(apiEndpoint, validatorAddr, delegatorAddr string) (*QueryResponse[DelegationResponse], error) {
 	resp, err := callAPI(apiEndpoint, fmt.Sprintf("/staking/validators/%s/delegations/%s", validatorAddr, delegatorAddr), nil)
 	if err != nil {
 		return nil, err
@@ -199,7 +305,7 @@ func GetStakingDelegation(apiEndpoint, validatorAddr, delegatorAddr string) (*Qu
 		return nil, err
 	}
 
-	var res QueryResponse[stakingtypes.QueryDelegationResponse]
+	var res QueryResponse[DelegationResponse]
 	if err := json.Unmarshal(bodyBytes, &res); err != nil {
 		return nil, err
 	}
@@ -211,7 +317,7 @@ func GetStakingDelegation(apiEndpoint, validatorAddr, delegatorAddr string) (*Qu
 	return &res, nil
 }
 
-func GetStakingValidatorDelegatorPeriodDelegations(apiEndpoint, validatorAddr, delegatorAddr string, params map[string]string) (*QueryResponse[[]stakingtypes.PeriodDelegation], error) {
+func GetStakingValidatorDelegatorPeriodDelegations(apiEndpoint, validatorAddr, delegatorAddr string, params map[string]string) (*QueryResponse[PeriodDelegationsResponse], error) {
 	resp, err := callAPI(apiEndpoint, fmt.Sprintf("/staking/validators/%s/delegators/%s/period_delegations", validatorAddr, delegatorAddr), params)
 	if err != nil {
 		return nil, err
@@ -223,7 +329,7 @@ func GetStakingValidatorDelegatorPeriodDelegations(apiEndpoint, validatorAddr, d
 		return nil, err
 	}
 
-	var res QueryResponse[[]stakingtypes.PeriodDelegation] // TODO: update type
+	var res QueryResponse[PeriodDelegationsResponse]
 	if err := json.Unmarshal(bodyBytes, &res); err != nil {
 		return nil, err
 	}
@@ -235,7 +341,7 @@ func GetStakingValidatorDelegatorPeriodDelegations(apiEndpoint, validatorAddr, d
 	return &res, nil
 }
 
-func GetStakingValidatorDelegatorPeriodDelegation(apiEndpoint, validatorAddr, delegatorAddr, delegationID string) (*QueryResponse[stakingtypes.PeriodDelegation], error) {
+func GetStakingValidatorDelegatorPeriodDelegation(apiEndpoint, validatorAddr, delegatorAddr, delegationID string) (*QueryResponse[PeriodDelegationResponse], error) {
 	resp, err := callAPI(apiEndpoint, fmt.Sprintf("/staking/validators/%s/delegators/%s/period_delegations/%s", validatorAddr, delegatorAddr, delegationID), nil)
 	if err != nil {
 		return nil, err
@@ -247,7 +353,7 @@ func GetStakingValidatorDelegatorPeriodDelegation(apiEndpoint, validatorAddr, de
 		return nil, err
 	}
 
-	var res QueryResponse[stakingtypes.PeriodDelegation] // TODO: update type
+	var res QueryResponse[PeriodDelegationResponse]
 	if err := json.Unmarshal(bodyBytes, &res); err != nil {
 		return nil, err
 	}
@@ -259,7 +365,7 @@ func GetStakingValidatorDelegatorPeriodDelegation(apiEndpoint, validatorAddr, de
 	return &res, nil
 }
 
-func GetStakingDelegatorDelegations(apiEndpoint, delegatorAddr string, params map[string]string) (*QueryResponse[stakingtypes.QueryDelegatorDelegationsResponse], error) {
+func GetStakingDelegatorDelegations(apiEndpoint, delegatorAddr string, params map[string]string) (*QueryResponse[DelegationsResponse], error) {
 	resp, err := callAPI(apiEndpoint, fmt.Sprintf("/staking/delegations/%s", delegatorAddr), params)
 	if err != nil {
 		return nil, err
@@ -271,7 +377,7 @@ func GetStakingDelegatorDelegations(apiEndpoint, delegatorAddr string, params ma
 		return nil, err
 	}
 
-	var res QueryResponse[stakingtypes.QueryDelegatorDelegationsResponse]
+	var res QueryResponse[DelegationsResponse]
 	if err := json.Unmarshal(bodyBytes, &res); err != nil {
 		return nil, err
 	}
@@ -283,7 +389,7 @@ func GetStakingDelegatorDelegations(apiEndpoint, delegatorAddr string, params ma
 	return &res, nil
 }
 
-func GetStakingDelegatorUnbondingDelegations(apiEndpoint, delegatorAddr string, params map[string]string) (*QueryResponse[stakingtypes.QueryDelegatorUnbondingDelegationsResponse], error) {
+func GetStakingDelegatorUnbondingDelegations(apiEndpoint, delegatorAddr string, params map[string]string) (*QueryResponse[UnbondingDelegationsResponse], error) {
 	resp, err := callAPI(apiEndpoint, fmt.Sprintf("/staking/delegators/%s/unbonding_delegations", delegatorAddr), params)
 	if err != nil {
 		return nil, err
@@ -295,7 +401,7 @@ func GetStakingDelegatorUnbondingDelegations(apiEndpoint, delegatorAddr string, 
 		return nil, err
 	}
 
-	var res QueryResponse[stakingtypes.QueryDelegatorUnbondingDelegationsResponse]
+	var res QueryResponse[UnbondingDelegationsResponse]
 	if err := json.Unmarshal(bodyBytes, &res); err != nil {
 		return nil, err
 	}

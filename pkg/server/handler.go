@@ -103,7 +103,7 @@ func (s *Server) EstimatedAPRHandler() gin.HandlerFunc {
 			return
 		}
 
-		inflationsPerYear, err := decimal.NewFromString(mintParamsResp.Msg.Params.InflationsPerYear.String())
+		inflationsPerYear, err := decimal.NewFromString(mintParamsResp.Msg.Params.InflationsPerYear)
 		if err != nil {
 			logger.Error().Err(err).Msg("failed to parse inflations per year")
 			c.JSON(http.StatusOK, Response{
@@ -113,17 +113,20 @@ func (s *Server) EstimatedAPRHandler() gin.HandlerFunc {
 			return
 		}
 
-		ubi, err := decimal.NewFromString(distParamsResp.Msg.Params.Ubi.String())
-		if err != nil {
-			logger.Error().Err(err).Msg("failed to parse ubi")
-			c.JSON(http.StatusOK, Response{
-				Code:  http.StatusInternalServerError,
-				Error: ErrParseParameter.Error(),
-			})
-			return
+		ubi := decimal.NewFromInt(0)
+		if distParamsResp.Msg.Params.Ubi != "" {
+			ubi, err = decimal.NewFromString(distParamsResp.Msg.Params.Ubi)
+			if err != nil {
+				logger.Error().Err(err).Msg("failed to parse ubi")
+				c.JSON(http.StatusOK, Response{
+					Code:  http.StatusInternalServerError,
+					Error: ErrParseParameter.Error(),
+				})
+				return
+			}
 		}
 
-		bondedTokens, err := decimal.NewFromString(stakingPoolResp.Msg.Pool.BondedTokens.String())
+		bondedTokens, err := decimal.NewFromString(stakingPoolResp.Msg.Pool.BondedTokens)
 		if err != nil {
 			logger.Error().Err(err).Msg("failed to parse bonded tokens")
 			c.JSON(http.StatusOK, Response{
@@ -304,7 +307,7 @@ func (s *Server) StakingValidatorsHandler() gin.HandlerFunc {
 
 		valAddrs := make([]string, 0, len(stakingValidatorsResp.Msg.Validators))
 		for _, val := range stakingValidatorsResp.Msg.Validators {
-			valAddrs = append(valAddrs, strings.ToLower(val.OperatorAddress))
+			valAddrs = append(valAddrs, strings.ToLower(val.Validator.OperatorAddress))
 		}
 
 		clUptimes, err := db.GetCLUptimes(s.dbOperator, valAddrs...)
@@ -328,8 +331,8 @@ func (s *Server) StakingValidatorsHandler() gin.HandlerFunc {
 		validators := make([]StakingValidatorData, 0, len(stakingValidatorsResp.Msg.Validators))
 		for _, val := range stakingValidatorsResp.Msg.Validators {
 			validators = append(validators, StakingValidatorData{
-				Validator: val,
-				Uptime:    clUptimesMap[strings.ToLower(val.OperatorAddress)],
+				ValidatorInfo: val.Validator,
+				Uptime:        clUptimesMap[strings.ToLower(val.Validator.OperatorAddress)],
 			})
 		}
 
@@ -391,8 +394,8 @@ func (s *Server) StakingValidatorHandler() gin.HandlerFunc {
 		}
 
 		msg := StakingValidatorData{
-			Validator: stakingValidatorResp.Msg.Validator,
-			Uptime:    clUptimesMap[strings.ToLower(stakingValidatorResp.Msg.Validator.OperatorAddress)],
+			ValidatorInfo: stakingValidatorResp.Msg.Validator,
+			Uptime:        clUptimesMap[strings.ToLower(stakingValidatorResp.Msg.Validator.OperatorAddress)],
 		}
 
 		c.JSON(http.StatusOK, Response{

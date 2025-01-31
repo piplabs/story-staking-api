@@ -8,7 +8,7 @@ import (
 	lightprovider "github.com/cometbft/cometbft/light/provider"
 	lighthttp "github.com/cometbft/cometbft/light/provider/http"
 	comethttp "github.com/cometbft/cometbft/rpc/client/http"
-	"github.com/redis/go-redis/v9"
+	redis "github.com/redis/go-redis/v9"
 	"github.com/rs/zerolog/log"
 	"gorm.io/gorm"
 

@@ -9,7 +9,7 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/redis/go-redis/v9"
+	redis "github.com/redis/go-redis/v9"
 	"github.com/rs/zerolog/log"
 	"gorm.io/gorm"
 

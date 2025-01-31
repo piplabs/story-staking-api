@@ -9,8 +9,8 @@ import (
 
 	secretmanager "cloud.google.com/go/secretmanager/apiv1"
 	"cloud.google.com/go/secretmanager/apiv1/secretmanagerpb"
-	"github.com/redis/go-redis/v9"
-	"gopkg.in/yaml.v2"
+	redis "github.com/redis/go-redis/v9"
+	yaml "gopkg.in/yaml.v2"
 )
 
 const (

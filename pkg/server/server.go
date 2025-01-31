@@ -9,7 +9,7 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"github.com/redis/go-redis/v9"
+	redis "github.com/redis/go-redis/v9"
 	"github.com/rs/zerolog/log"
 	"golang.org/x/sync/singleflight"
 	"gorm.io/gorm"

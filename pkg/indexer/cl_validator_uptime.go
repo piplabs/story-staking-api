@@ -9,7 +9,7 @@ import (
 	lighthttp "github.com/cometbft/cometbft/light/provider/http"
 	comethttp "github.com/cometbft/cometbft/rpc/client/http"
 	"github.com/cometbft/cometbft/types"
-	"github.com/redis/go-redis/v9"
+	redis "github.com/redis/go-redis/v9"
 	"github.com/rs/zerolog/log"
 	"gorm.io/gorm"
 

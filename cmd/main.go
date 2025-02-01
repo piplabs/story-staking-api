@@ -10,7 +10,7 @@ import (
 	kingpin "github.com/alecthomas/kingpin/v2"
 	"github.com/rs/zerolog/log"
 
-	"github.com/piplabs/story-indexer/pkg/server"
+	"github.com/piplabs/story-staking-api/pkg/server"
 )
 
 var (
@@ -41,11 +41,10 @@ func main() {
 
 	svr, err := server.NewServer(ctx, *home, &svrConfig)
 	if err != nil {
-		log.Fatal().Err(err).Msg("new story-indexer server failed")
+		log.Fatal().Err(err).Msg("new story-staking-api server failed")
 	}
 
 	svr.Run()
-	log.Info().Str("port", svrConfig.Server.ServicePort).Msg("story-indexer server started")
 
 	ch := make(chan os.Signal, 1)
 	signal.Notify(ch, os.Interrupt, os.Kill, syscall.SIGTERM)

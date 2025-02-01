@@ -8,7 +8,7 @@ import (
 	redis "github.com/redis/go-redis/v9"
 	"github.com/rs/zerolog/log"
 
-	"github.com/piplabs/story-indexer/cache"
+	"github.com/piplabs/story-staking-api/cache"
 )
 
 func GetCachedData[T any](ctx context.Context, rdb *redis.Client, key string) (*T, bool) {

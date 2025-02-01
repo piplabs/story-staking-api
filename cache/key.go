@@ -18,7 +18,7 @@ func RewardsKey(evmAddr string) string {
 
 func ValidatorsKey(params map[string]string) string {
 	return fmt.Sprintf(
-		ValidatorsKeyFormat, ValidatorsKeyPrefix, params["status"], params["key"],
-		params["offset"], params["limit"], params["count_total"], params["reverse"],
+		ValidatorsKeyFormat, ValidatorsKeyPrefix, params["status"], params["pagination.key"],
+		params["pagination.offset"], params["pagination.limit"], params["pagination.count_total"], params["pagination.reverse"],
 	)
 }

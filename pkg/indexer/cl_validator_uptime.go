@@ -13,9 +13,9 @@ import (
 	"github.com/rs/zerolog/log"
 	"gorm.io/gorm"
 
-	"github.com/piplabs/story-indexer/cache"
-	"github.com/piplabs/story-indexer/db"
-	"github.com/piplabs/story-indexer/pkg/util"
+	"github.com/piplabs/story-staking-api/cache"
+	"github.com/piplabs/story-staking-api/db"
+	"github.com/piplabs/story-staking-api/pkg/util"
 )
 
 var _ Indexer = (*CLValidatorUptimeIndexer)(nil)

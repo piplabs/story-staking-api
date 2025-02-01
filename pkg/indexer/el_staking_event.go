@@ -2,7 +2,6 @@ package indexer
 
 import (
 	"context"
-	"encoding/hex"
 	"strings"
 	"time"
 
@@ -13,9 +12,9 @@ import (
 	"github.com/rs/zerolog/log"
 	"gorm.io/gorm"
 
-	"github.com/piplabs/story-indexer/db"
-	"github.com/piplabs/story-indexer/pkg/indexer/contract/iptokenstaking"
-	"github.com/piplabs/story-indexer/pkg/util"
+	"github.com/piplabs/story-staking-api/db"
+	"github.com/piplabs/story-staking-api/pkg/indexer/contract/iptokenstaking"
+	"github.com/piplabs/story-staking-api/pkg/util"
 )
 
 const (
@@ -149,7 +148,7 @@ func (e *ELStakingEventIndexer) getStakingEvents(from, to int64) ([]*db.ELStakin
 		ev := setOperatorEvents.Event
 
 		elStakingEvents = append(elStakingEvents, &db.ELStakingEvent{
-			TxHash:      hex.EncodeToString(ev.Raw.TxHash.Bytes()),
+			TxHash:      ev.Raw.TxHash.Hex(),
 			BlockHeight: int64(ev.Raw.BlockNumber),
 			EventType:   TypeSetOperator,
 			Address:     strings.ToLower(ev.Delegator.Hex()),
@@ -172,7 +171,7 @@ func (e *ELStakingEventIndexer) getStakingEvents(from, to int64) ([]*db.ELStakin
 		ev := unsetOperatorEvents.Event
 
 		elStakingEvents = append(elStakingEvents, &db.ELStakingEvent{
-			TxHash:      hex.EncodeToString(ev.Raw.TxHash.Bytes()),
+			TxHash:      ev.Raw.TxHash.Hex(),
 			BlockHeight: int64(ev.Raw.BlockNumber),
 			EventType:   TypeUnsetOperator,
 			Address:     strings.ToLower(ev.Delegator.Hex()),
@@ -194,7 +193,7 @@ func (e *ELStakingEventIndexer) getStakingEvents(from, to int64) ([]*db.ELStakin
 		ev := setWithdrawalAddressEvents.Event
 
 		elStakingEvents = append(elStakingEvents, &db.ELStakingEvent{
-			TxHash:      hex.EncodeToString(ev.Raw.TxHash.Bytes()),
+			TxHash:      ev.Raw.TxHash.Hex(),
 			BlockHeight: int64(ev.Raw.BlockNumber),
 			EventType:   TypeSetWithdrawalAddress,
 			Address:     strings.ToLower(ev.Delegator.Hex()),
@@ -217,7 +216,7 @@ func (e *ELStakingEventIndexer) getStakingEvents(from, to int64) ([]*db.ELStakin
 		ev := setRewardAddressEvents.Event
 
 		elStakingEvents = append(elStakingEvents, &db.ELStakingEvent{
-			TxHash:      hex.EncodeToString(ev.Raw.TxHash.Bytes()),
+			TxHash:      ev.Raw.TxHash.Hex(),
 			BlockHeight: int64(ev.Raw.BlockNumber),
 			EventType:   TypeSetRewardAddress,
 			Address:     strings.ToLower(ev.Delegator.Hex()),
@@ -245,7 +244,7 @@ func (e *ELStakingEventIndexer) getStakingEvents(from, to int64) ([]*db.ELStakin
 		}
 
 		elStakingEvents = append(elStakingEvents, &db.ELStakingEvent{
-			TxHash:      hex.EncodeToString(ev.Raw.TxHash.Bytes()),
+			TxHash:      ev.Raw.TxHash.Hex(),
 			BlockHeight: int64(ev.Raw.BlockNumber),
 			EventType:   TypeUpdateValidatorCommission,
 			Address:     strings.ToLower(evmAddr.Hex()),
@@ -269,7 +268,7 @@ func (e *ELStakingEventIndexer) getStakingEvents(from, to int64) ([]*db.ELStakin
 		valAddr := strings.ToLower(ev.OperatorAddress.Hex())
 
 		elStakingEvents = append(elStakingEvents, &db.ELStakingEvent{
-			TxHash:              hex.EncodeToString(ev.Raw.TxHash.Bytes()),
+			TxHash:              ev.Raw.TxHash.Hex(),
 			BlockHeight:         int64(ev.Raw.BlockNumber),
 			EventType:           TypeCreateValidator,
 			Address:             valAddr,
@@ -302,7 +301,7 @@ func (e *ELStakingEventIndexer) getStakingEvents(from, to int64) ([]*db.ELStakin
 		}
 
 		elStakingEvents = append(elStakingEvents, &db.ELStakingEvent{
-			TxHash:              hex.EncodeToString(ev.Raw.TxHash.Bytes()),
+			TxHash:              ev.Raw.TxHash.Hex(),
 			BlockHeight:         int64(ev.Raw.BlockNumber),
 			EventType:           eventType,
 			Address:             strings.ToLower(ev.OperatorAddress.Hex()),
@@ -340,7 +339,7 @@ func (e *ELStakingEventIndexer) getStakingEvents(from, to int64) ([]*db.ELStakin
 		}
 
 		elStakingEvents = append(elStakingEvents, &db.ELStakingEvent{
-			TxHash:              hex.EncodeToString(ev.Raw.TxHash.Bytes()),
+			TxHash:              ev.Raw.TxHash.Hex(),
 			BlockHeight:         int64(ev.Raw.BlockNumber),
 			EventType:           eventType,
 			Address:             strings.ToLower(ev.OperatorAddress.Hex()),
@@ -374,7 +373,7 @@ func (e *ELStakingEventIndexer) getStakingEvents(from, to int64) ([]*db.ELStakin
 		}
 
 		elStakingEvents = append(elStakingEvents, &db.ELStakingEvent{
-			TxHash:              hex.EncodeToString(ev.Raw.TxHash.Bytes()),
+			TxHash:              ev.Raw.TxHash.Hex(),
 			BlockHeight:         int64(ev.Raw.BlockNumber),
 			EventType:           eventType,
 			Address:             strings.ToLower(ev.OperatorAddress.Hex()),
@@ -407,7 +406,7 @@ func (e *ELStakingEventIndexer) getStakingEvents(from, to int64) ([]*db.ELStakin
 		}
 
 		elStakingEvents = append(elStakingEvents, &db.ELStakingEvent{
-			TxHash:              hex.EncodeToString(ev.Raw.TxHash.Bytes()),
+			TxHash:              ev.Raw.TxHash.Hex(),
 			BlockHeight:         int64(ev.Raw.BlockNumber),
 			EventType:           eventType,
 			Address:             strings.ToLower(ev.Unjailer.Hex()),

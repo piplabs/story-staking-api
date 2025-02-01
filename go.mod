@@ -1,4 +1,4 @@
-module github.com/piplabs/story-indexer
+module github.com/piplabs/story-staking-api
 
 go 1.23.4
 

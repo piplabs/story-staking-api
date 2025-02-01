@@ -12,7 +12,7 @@ import (
 	"github.com/rs/zerolog/log"
 	"gorm.io/gorm"
 
-	"github.com/piplabs/story-indexer/db"
+	"github.com/piplabs/story-staking-api/db"
 )
 
 var _ Indexer = (*CLStakingEventIndexer)(nil)
@@ -193,7 +193,7 @@ func (c *CLStakingEventIndexer) getBlockEvents(blkno int64) ([]*db.CLStakingEven
 		errCode, exists := attrMap[AttributeKeyErrorCode]
 
 		stakingCLEvents = append(stakingCLEvents, &db.CLStakingEvent{
-			ELTxHash:    attrMap[AttributeKeyTxHash],
+			ELTxHash:    "0x" + attrMap[AttributeKeyTxHash],
 			BlockHeight: blkno,
 			StatusOK:    !exists,
 			ErrorCode:   errCode,

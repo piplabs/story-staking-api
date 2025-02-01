@@ -10,7 +10,7 @@ import (
 	"github.com/rs/zerolog/log"
 	"gorm.io/gorm"
 
-	"github.com/piplabs/story-indexer/db"
+	"github.com/piplabs/story-staking-api/db"
 )
 
 var _ Indexer = (*ELBlockIndexer)(nil)

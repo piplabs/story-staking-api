@@ -1,7 +1,7 @@
 package server
 
 import (
-	"github.com/piplabs/story-indexer/db"
+	"github.com/piplabs/story-staking-api/db"
 )
 
 type NetworkStatus string

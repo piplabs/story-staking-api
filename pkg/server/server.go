@@ -14,9 +14,9 @@ import (
 	"golang.org/x/sync/singleflight"
 	"gorm.io/gorm"
 
-	"github.com/piplabs/story-indexer/cache"
-	"github.com/piplabs/story-indexer/db"
-	"github.com/piplabs/story-indexer/pkg/indexer"
+	"github.com/piplabs/story-staking-api/cache"
+	"github.com/piplabs/story-staking-api/db"
+	"github.com/piplabs/story-staking-api/pkg/indexer"
 )
 
 type Server struct {
@@ -64,9 +64,10 @@ func (s *Server) Run() {
 		go func() {
 			defer s.wg.Done()
 			if err := s.httpServer.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-				log.Error().Err(err).Msg("story-indexer server stopped")
+				log.Error().Err(err).Msg("story-staking-api reader server stopped")
 			}
 		}()
+		log.Info().Str("port", s.conf.Server.ServicePort).Msg("story-staking-api reader server started")
 	case IndexModeWriter:
 		for _, indexer := range s.indexers {
 			s.wg.Add(1)
@@ -75,6 +76,7 @@ func (s *Server) Run() {
 				indexer.Run()
 			}()
 		}
+		log.Info().Msg("story-staking-api writer process started")
 	default:
 		log.Fatal().Str("index_mode", s.conf.Server.IndexMode).Msg("invalid index mode")
 	}

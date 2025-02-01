@@ -10,8 +10,8 @@ import (
 	"github.com/rs/zerolog/log"
 	"github.com/shopspring/decimal"
 
-	"github.com/piplabs/story-indexer/cache"
-	"github.com/piplabs/story-indexer/db"
+	"github.com/piplabs/story-staking-api/cache"
+	"github.com/piplabs/story-staking-api/db"
 )
 
 func (s *Server) NetworkStatusHandler() gin.HandlerFunc {
@@ -291,7 +291,9 @@ func (s *Server) StakingValidatorsHandler() gin.HandlerFunc {
 		logger := log.With().Str("handler", "StakingValidatorsHandler").Logger()
 
 		params := ParsePaginationParams(c)
-		params["status"] = c.Query("status")
+		if status := c.Query("status"); status != "" {
+			params["status"] = status
+		}
 
 		// Get from cache
 		cachedMsg, ok := GetCachedData[StakingValidatorsData](s.ctx, s.cacheOperator, cache.ValidatorsKey(params))

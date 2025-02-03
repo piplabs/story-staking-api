@@ -9,6 +9,7 @@ import (
 
 	secretmanager "cloud.google.com/go/secretmanager/apiv1"
 	"cloud.google.com/go/secretmanager/apiv1/secretmanagerpb"
+	"github.com/kelseyhightower/envconfig"
 	redis "github.com/redis/go-redis/v9"
 	yaml "gopkg.in/yaml.v2"
 )
@@ -18,34 +19,40 @@ const (
 )
 
 const (
+	DefaultRedisConfigPrefix = "redis"
+
 	RedisPasswordModePlain = "plain"
 	RedisPasswordModeGCP   = "gcp-secret-manager"
 )
 
 type RedisConfig struct {
-	RedisHost         string `yaml:"redis-addr"`
-	RedisPasswordMode string `yaml:"redis-password-mode"`
-	RedisPassword     string `yaml:"redis-password"`
-	RedisDB           int    `yaml:"redis-db"`
+	Addr         string `yaml:"addr" envconfig:"ADDR"`
+	PasswordMode string `yaml:"password-mode" envconfig:"PASSWORD_MODE"`
+	Password     string `yaml:"password" envconfig:"PASSWORD"`
+	DB           int    `yaml:"db" envconfig:"DB"`
 }
 
 func NewRedisClient(ctx context.Context, configFile string) (*redis.Client, error) {
-	var config RedisConfig
-
 	f, err := os.Open(configFile)
 	if err != nil {
 		return nil, err
 	}
 	defer f.Close()
 
+	var config RedisConfig
 	if err := yaml.NewDecoder(f).Decode(&config); err != nil {
 		return nil, err
 	}
 
+	// Load environment variables
+	if err := envconfig.Process(DefaultRedisConfigPrefix, &config); err != nil {
+		return nil, err
+	}
+
 	var redisPassword string
-	switch config.RedisPasswordMode {
+	switch config.PasswordMode {
 	case RedisPasswordModePlain:
-		redisPassword = config.RedisPassword
+		redisPassword = config.Password
 	case RedisPasswordModeGCP:
 		client, err := secretmanager.NewClient(ctx)
 		if err != nil {
@@ -53,7 +60,7 @@ func NewRedisClient(ctx context.Context, configFile string) (*redis.Client, erro
 		}
 		defer client.Close()
 
-		result, err := client.AccessSecretVersion(ctx, &secretmanagerpb.AccessSecretVersionRequest{Name: config.RedisPassword})
+		result, err := client.AccessSecretVersion(ctx, &secretmanagerpb.AccessSecretVersionRequest{Name: config.Password})
 		if err != nil {
 			return nil, fmt.Errorf("failed to access secret version: %w", err)
 		}
@@ -65,13 +72,13 @@ func NewRedisClient(ctx context.Context, configFile string) (*redis.Client, erro
 		}
 		redisPassword = string(result.Payload.Data)
 	default:
-		return nil, fmt.Errorf("invalid redis password mode: %s", config.RedisPasswordMode)
+		return nil, fmt.Errorf("invalid redis password mode: %s", config.PasswordMode)
 	}
 
 	return redis.NewClient(&redis.Options{
-		Addr:     config.RedisHost,
+		Addr:     config.Addr,
 		Password: redisPassword,
-		DB:       config.RedisDB,
+		DB:       config.DB,
 	}), nil
 }
 

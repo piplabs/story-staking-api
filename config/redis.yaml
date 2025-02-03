@@ -1,5 +1,5 @@
-redis-addr: localhost:6379
-# redis-password-mode: plain | gcp-secret-manager
-redis-password-mode: plain
-redis-password: ""
-redis-db: 0
+addr: localhost:6379
+# password-mode: plain | gcp-secret-manager
+password-mode: plain
+password: ""
+db: 0

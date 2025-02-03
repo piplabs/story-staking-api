@@ -17,7 +17,7 @@ func (CLValidatorUptime) TableName() string {
 	return "cl_validator_uptimes"
 }
 
-func BatchUpsertCLUptime(db *gorm.DB, indexer string, clUptimes []*CLValidatorUptime, height int64) error {
+func BatchUpsertCLValidatorUptime(db *gorm.DB, indexer string, clUptimes []*CLValidatorUptime, height int64) error {
 	return db.Transaction(func(tx *gorm.DB) error {
 		for _, uptime := range clUptimes {
 			err := tx.Clauses(clause.OnConflict{
@@ -46,7 +46,7 @@ func BatchUpsertCLUptime(db *gorm.DB, indexer string, clUptimes []*CLValidatorUp
 	})
 }
 
-func GetCLUptimes(db *gorm.DB, evmAddrs ...string) ([]*CLValidatorUptime, error) {
+func GetCLValidatorUptimes(db *gorm.DB, evmAddrs ...string) ([]*CLValidatorUptime, error) {
 	var results []*CLValidatorUptime
 	if err := db.Where("evm_address IN ?", evmAddrs).Find(&results).Error; err != nil {
 		return nil, err

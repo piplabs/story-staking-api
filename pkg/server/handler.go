@@ -239,7 +239,7 @@ func (s *Server) RewardsHandler() gin.HandlerFunc {
 		}
 
 		// Get from database
-		rewards, err := db.GetRewards(s.dbOperator, evmAddr)
+		rewards, err := db.GetELRewards(s.dbOperator, evmAddr)
 		if err != nil {
 			logger.Error().Err(err).Msg("failed to get rewards")
 			c.JSON(http.StatusOK, Response{
@@ -321,7 +321,7 @@ func (s *Server) StakingValidatorsHandler() gin.HandlerFunc {
 			valAddrs = append(valAddrs, strings.ToLower(val.OperatorAddress))
 		}
 
-		clUptimes, err := db.GetCLUptimes(s.dbOperator, valAddrs...)
+		clUptimes, err := db.GetCLValidatorUptimes(s.dbOperator, valAddrs...)
 		if err != nil {
 			logger.Error().Err(err).Msg("failed to get cl uptimes")
 			c.JSON(http.StatusOK, Response{
@@ -386,7 +386,7 @@ func (s *Server) StakingValidatorHandler() gin.HandlerFunc {
 			return
 		}
 
-		clUptimes, err := db.GetCLUptimes(s.dbOperator, valAddr)
+		clUptimes, err := db.GetCLValidatorUptimes(s.dbOperator, valAddr)
 		if err != nil {
 			logger.Error().Err(err).Msg("failed to get cl uptimes")
 			c.JSON(http.StatusOK, Response{

@@ -32,7 +32,7 @@ func BatchUpsertELRewards(db *gorm.DB, indexer string, rewards []*ELReward, heig
 	})
 }
 
-func GetRewards(db *gorm.DB, evmAddr string) (*ELReward, error) {
+func GetELRewards(db *gorm.DB, evmAddr string) (*ELReward, error) {
 	var reward ELReward
 	if err := db.Where("address = ?", evmAddr).First(&reward).Error; err != nil {
 		return nil, err

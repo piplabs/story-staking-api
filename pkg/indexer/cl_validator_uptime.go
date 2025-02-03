@@ -114,7 +114,7 @@ func (c *CLValidatorUptimeIndexer) index(from, to int64) error {
 
 	c.invalidateCache()
 
-	if err := db.BatchUpsertCLUptime(c.dbOperator, c.Name(), clUptimes, to); err != nil {
+	if err := db.BatchUpsertCLValidatorUptime(c.dbOperator, c.Name(), clUptimes, to); err != nil {
 		return err
 	}
 

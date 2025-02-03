@@ -9,6 +9,7 @@ import (
 
 	secretmanager "cloud.google.com/go/secretmanager/apiv1"
 	"cloud.google.com/go/secretmanager/apiv1/secretmanagerpb"
+	"github.com/kelseyhightower/envconfig"
 	yaml "gopkg.in/yaml.v2"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -16,34 +17,40 @@ import (
 )
 
 const (
+	DefaultPostgresConfigPrefix = "postgres"
+
 	DBPasswordModePlain = "plain"
 	DBPasswordModeGCP   = "gcp-secret-manager"
 )
 
 type PostgresConfig struct {
-	DBUsername     string `yaml:"db-username"`
-	DBPasswordMode string `yaml:"db-password-mode"`
-	DBPassword     string `yaml:"db-password"`
-	DBHost         string `yaml:"db-host"`
-	DBPort         int    `yaml:"db-port"`
-	DBName         string `yaml:"db-name"`
+	DBUsername     string `yaml:"db-username" envconfig:"DB_USERNAME"`
+	DBPasswordMode string `yaml:"db-password-mode" envconfig:"DB_PASSWORD_MODE"`
+	DBPassword     string `yaml:"db-password" envconfig:"DB_PASSWORD"`
+	DBHost         string `yaml:"db-host" envconfig:"DB_HOST"`
+	DBPort         int    `yaml:"db-port" envconfig:"DB_PORT"`
+	DBName         string `yaml:"db-name" envconfig:"DB_NAME"`
 
-	DBMaxConns        int           `yaml:"db-max-conns"`
-	DBMinConns        int           `yaml:"db-min-conns"`
-	DBMaxConnLifetime time.Duration `yaml:"db-max-conn-lifetime"`
-	DBMaxConnIdleTime time.Duration `yaml:"db-max-conn-idle-time"`
+	DBMaxConns        int           `yaml:"db-max-conns" envconfig:"DB_MAX_CONNS"`
+	DBMinConns        int           `yaml:"db-min-conns" envconfig:"DB_MIN_CONNS"`
+	DBMaxConnLifetime time.Duration `yaml:"db-max-conn-lifetime" envconfig:"DB_MAX_CONN_LIFETIME"`
+	DBMaxConnIdleTime time.Duration `yaml:"db-max-conn-idle-time" envconfig:"DB_MAX_CONN_IDLE_TIME"`
 }
 
 func NewPostgresClient(ctx context.Context, configFile string) (*gorm.DB, error) {
-	var config PostgresConfig
-
 	f, err := os.Open(configFile)
 	if err != nil {
 		return nil, err
 	}
 	defer f.Close()
 
+	var config PostgresConfig
 	if err := yaml.NewDecoder(f).Decode(&config); err != nil {
+		return nil, err
+	}
+
+	// Load environment variables
+	if err := envconfig.Process(DefaultPostgresConfigPrefix, &config); err != nil {
 		return nil, err
 	}
 

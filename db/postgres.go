@@ -24,13 +24,12 @@ const (
 )
 
 type PostgresConfig struct {
-	DBUsername     string `yaml:"db-username" envconfig:"DB_USERNAME"`
-	DBPasswordMode string `yaml:"db-password-mode" envconfig:"DB_PASSWORD_MODE"`
-	DBPassword     string `yaml:"db-password" envconfig:"DB_PASSWORD"`
-	DBHost         string `yaml:"db-host" envconfig:"DB_HOST"`
-	DBPort         int    `yaml:"db-port" envconfig:"DB_PORT"`
-	DBName         string `yaml:"db-name" envconfig:"DB_NAME"`
-
+	DBUsername        string        `yaml:"db-username" envconfig:"DB_USERNAME"`
+	DBPasswordMode    string        `yaml:"db-password-mode" envconfig:"DB_PASSWORD_MODE"`
+	DBPassword        string        `yaml:"db-password" envconfig:"DB_PASSWORD"`
+	DBHost            string        `yaml:"db-host" envconfig:"DB_HOST"`
+	DBPort            int           `yaml:"db-port" envconfig:"DB_PORT"`
+	DBName            string        `yaml:"db-name" envconfig:"DB_NAME"`
 	DBMaxConns        int           `yaml:"db-max-conns" envconfig:"DB_MAX_CONNS"`
 	DBMinConns        int           `yaml:"db-min-conns" envconfig:"DB_MIN_CONNS"`
 	DBMaxConnLifetime time.Duration `yaml:"db-max-conn-lifetime" envconfig:"DB_MAX_CONN_LIFETIME"`

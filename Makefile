@@ -8,7 +8,7 @@ run:
 	go run ./cmd/main.go
 
 build-linux-amd64:
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o story-staking-api ./cmd/main.go
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o story-staking-api ./cmd/main.go
 
 test:
 	go clean -testcache && CGO_ENABLED=1 go test ./...

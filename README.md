@@ -4,7 +4,7 @@
 
 ## Prerequisites
 
-- [Go1.23+](https://golang.org/dl/)
+- [Go1.23.4+](https://golang.org/dl/)
 
 ## Features
 

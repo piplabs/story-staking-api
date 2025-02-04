@@ -101,14 +101,22 @@ func (s *Server) GracefulQuit() error {
 
 func (s *Server) initServices() error { // TODO: get pwd from secret manager
 	// Connect to database.
-	postgresClient, err := db.NewPostgresClient(s.ctx, filepath.Join(s.rootDir, s.conf.Database.ConfigFile))
+	var postgresConfig string
+	if s.conf.Database.ConfigFile != "" {
+		postgresConfig = filepath.Join(s.rootDir, s.conf.Database.ConfigFile)
+	}
+	postgresClient, err := db.NewPostgresClient(s.ctx, postgresConfig)
 	if err != nil {
 		return err
 	}
 	s.dbOperator = postgresClient
 
 	// Connect to cache.
-	redisClient, err := cache.NewRedisClient(s.ctx, filepath.Join(s.rootDir, s.conf.Cache.ConfigFile))
+	var redisConfig string
+	if s.conf.Cache.ConfigFile != "" {
+		redisConfig = filepath.Join(s.rootDir, s.conf.Cache.ConfigFile)
+	}
+	redisClient, err := cache.NewRedisClient(s.ctx, redisConfig)
 	if err != nil {
 		return err
 	}

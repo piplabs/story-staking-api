@@ -60,19 +60,11 @@ func (c Config) Validate() error {
 		return fmt.Errorf("invalid database engine: %s", c.Database.Engine)
 	}
 
-	if c.Database.ConfigFile == "" {
-		return fmt.Errorf("database config file is required")
-	}
-
 	switch c.Cache.Engine {
 	case CacheEngineRedis:
 		// Valid, do nothing.
 	default:
 		return fmt.Errorf("invalid cache engine: %s", c.Cache.Engine)
-	}
-
-	if c.Cache.ConfigFile == "" {
-		return fmt.Errorf("cache config file is required")
 	}
 
 	return nil

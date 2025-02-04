@@ -125,6 +125,8 @@ func (s *Server) initServices() error { // TODO: get pwd from secret manager
 	// Setup gin service engine.
 	s.setupGinService()
 
+	s.setupHealthCheck()
+
 	// Setup indexers.
 	s.setupIndexers()
 
@@ -192,6 +194,31 @@ func (s *Server) setupGinService() {
 		Addr:    s.conf.Server.ServicePort,
 		Handler: s.ginService,
 	}
+}
+
+func (s *Server) setupHealthCheck() {
+	s.ginService.GET("/healthz", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"status":  "ok",
+			"service": "staking-api",
+		})
+	})
+
+	s.ginService.GET("/ready", func(c *gin.Context) {
+		// TODO: check DB connection
+		c.JSON(200, gin.H{
+			"ready":   true,
+			"service": "staking-api",
+		})
+	})
+
+	s.ginService.GET("/", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"service": "staking-api",
+			"version": "0.1.0",
+			"status":  "healthy",
+		})
+	})
 }
 
 func (s *Server) setupIndexers() error {

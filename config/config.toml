@@ -6,7 +6,7 @@ geth_rpc_endpoint = "http://localhost:8545"
 
 [server]
 # Index mode options: reader | writer
-index_mode = "writer"
+index_mode = "reader"
 # Service mode options: debug | release
 service_mode = "debug"
 service_port = ":8080"

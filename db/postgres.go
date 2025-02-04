@@ -38,15 +38,18 @@ type PostgresConfig struct {
 }
 
 func NewPostgresClient(ctx context.Context, configFile string) (*gorm.DB, error) {
-	f, err := os.Open(configFile)
-	if err != nil {
-		return nil, err
-	}
-	defer f.Close()
-
 	var config PostgresConfig
-	if err := yaml.NewDecoder(f).Decode(&config); err != nil {
-		return nil, err
+
+	if configFile != "" {
+		f, err := os.Open(configFile)
+		if err != nil {
+			return nil, err
+		}
+		defer f.Close()
+
+		if err := yaml.NewDecoder(f).Decode(&config); err != nil {
+			return nil, err
+		}
 	}
 
 	// Load environment variables

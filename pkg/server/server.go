@@ -58,15 +58,16 @@ func NewServer(ctx context.Context, dir string, conf *Config) (*Server, error) {
 }
 
 func (s *Server) Run() {
+	s.wg.Add(1)
+	go func() {
+		defer s.wg.Done()
+		if err := s.httpServer.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			log.Error().Err(err).Msg("story-staking-api server stopped")
+		}
+	}()
+
 	switch s.conf.Server.IndexMode {
 	case IndexModeReader:
-		s.wg.Add(1)
-		go func() {
-			defer s.wg.Done()
-			if err := s.httpServer.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-				log.Error().Err(err).Msg("story-staking-api reader server stopped")
-			}
-		}()
 		log.Info().Str("port", s.conf.Server.ServicePort).Msg("story-staking-api reader server started")
 	case IndexModeWriter:
 		for _, indexer := range s.indexers {
@@ -84,9 +85,7 @@ func (s *Server) Run() {
 
 func (s *Server) GracefulQuit() error {
 	s.cancel()
-	if s.conf.Server.IndexMode == IndexModeReader {
-		_ = s.httpServer.Shutdown(context.Background())
-	}
+	_ = s.httpServer.Shutdown(context.Background())
 	s.wg.Wait()
 
 	_ = s.cacheOperator.Close()
@@ -124,14 +123,17 @@ func (s *Server) initServices() error { // TODO: get pwd from secret manager
 
 	// Setup gin service engine.
 	s.setupGinService()
+	if s.conf.Server.IndexMode == IndexModeReader {
+		s.setupStakingAPI()
+	}
+	s.setupHealthCheckAPI()
 
-	s.setupHealthCheck()
-
-	// Setup indexers.
-	s.setupIndexers()
-
-	// Setup database states for `writer` mode.
+	// Setup database states and indexers for `writer` mode.
 	if s.conf.Server.IndexMode == IndexModeWriter {
+		if err := s.setupIndexers(); err != nil {
+			return err
+		}
+
 		s.dbOperator.AutoMigrate(&db.CLBlock{})
 		s.dbOperator.AutoMigrate(&db.CLStakingEvent{})
 		s.dbOperator.AutoMigrate(&db.CLValidatorUptime{})
@@ -168,6 +170,13 @@ func (s *Server) setupGinService() {
 	s.ginService.Use(gin.Logger())
 	s.ginService.Use(gin.Recovery())
 
+	s.httpServer = &http.Server{
+		Addr:    s.conf.Server.ServicePort,
+		Handler: s.ginService,
+	}
+}
+
+func (s *Server) setupStakingAPI() {
 	apiGroup := s.ginService.Group("/api")
 	{
 		// Indexer APIs.
@@ -189,14 +198,9 @@ func (s *Server) setupGinService() {
 
 		apiGroup.GET("/staking/delegators/:delegator_address/unbonding_delegations", s.StakingDelegatorUnbondingDelegationsHandler())
 	}
-
-	s.httpServer = &http.Server{
-		Addr:    s.conf.Server.ServicePort,
-		Handler: s.ginService,
-	}
 }
 
-func (s *Server) setupHealthCheck() {
+func (s *Server) setupHealthCheckAPI() {
 	s.ginService.GET("/healthz", func(c *gin.Context) {
 		c.JSON(200, gin.H{
 			"status":  "ok",

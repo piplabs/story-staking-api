@@ -160,6 +160,14 @@
         "description": {
           "moniker": "0x0FC41199CE588948861A8DA86D725A5A073AE91A"
         },
+        "commission": {
+          "commission_rates": {
+            "rate": "0.000000000000000000",
+            "max_rate": "0.000000000000000000",
+            "max_change_rate": "0.000000000000000000"
+          },
+          "update_time": "2024-04-16T11:04:40.60280319Z"
+        },
         "uptime": "100%"
       },
       {
@@ -174,6 +182,14 @@
         "delegator_shares": "1000000.000000000000000000",
         "description": {
           "moniker": "0x99C28AE30CBEFEFF75E91C66692FE0BD9279B861"
+        },
+        "commission": {
+          "commission_rates": {
+            "rate": "0.000000000000000000",
+            "max_rate": "0.000000000000000000",
+            "max_change_rate": "0.000000000000000000"
+          },
+          "update_time": "2024-04-16T11:04:40.60280319Z"
         },
         "uptime": "9.64%"
       },
@@ -190,6 +206,14 @@
         "description": {
           "moniker": "new_validator"
         },
+        "commission": {
+          "commission_rates": {
+            "rate": "0.000000000000000000",
+            "max_rate": "0.000000000000000000",
+            "max_change_rate": "0.000000000000000000"
+          },
+          "update_time": "2024-04-16T11:04:40.60280319Z"
+        },
         "uptime": "0%"
       },
       {
@@ -205,6 +229,14 @@
         "description": {
           "moniker": "0x9DFC26A7662106EEEC5E87B20CBB690CFCE73A05"
         },
+        "commission": {
+          "commission_rates": {
+            "rate": "0.000000000000000000",
+            "max_rate": "0.000000000000000000",
+            "max_change_rate": "0.000000000000000000"
+          },
+          "update_time": "2024-04-16T11:04:40.60280319Z"
+        },
         "uptime": "10.82%"
       },
       {
@@ -219,6 +251,14 @@
         "delegator_shares": "1000000.000000000000000000",
         "description": {
           "moniker": "0x768A39103B552E7AE56635DD4E9B55922AAFC504"
+        },
+        "commission": {
+          "commission_rates": {
+            "rate": "0.000000000000000000",
+            "max_rate": "0.000000000000000000",
+            "max_change_rate": "0.000000000000000000"
+          },
+          "update_time": "2024-04-16T11:04:40.60280319Z"
         },
         "uptime": "9.17%"
       }
@@ -254,6 +294,14 @@
     "description": {
       "moniker": "0x0FC41199CE588948861A8DA86D725A5A073AE91A"
     },
+    "commission": {
+          "commission_rates": {
+            "rate": "0.000000000000000000",
+            "max_rate": "0.000000000000000000",
+            "max_change_rate": "0.000000000000000000"
+          },
+          "update_time": "2024-04-16T11:04:40.60280319Z"
+        },
     "uptime": "100%"
   },
   "error": ""

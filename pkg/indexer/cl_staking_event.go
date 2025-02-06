@@ -2,6 +2,9 @@ package indexer
 
 import (
 	"context"
+	"encoding/hex"
+	"fmt"
+	"strings"
 	"time"
 
 	abcitypes "github.com/cometbft/cometbft/abci/types"
@@ -13,6 +16,7 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/piplabs/story-staking-api/db"
+	"github.com/piplabs/story-staking-api/pkg/util"
 )
 
 var _ Indexer = (*CLStakingEventIndexer)(nil)
@@ -44,6 +48,8 @@ const (
 	AttributeKeyTxHash             = "tx_hash"
 	AttributeKeyValidatorCmpPubKey = "validator_cmp_pubkey"
 	AttributeKeyAmount             = "amount"
+	AttributeKeySenderAddress      = "sender_address"
+	AttributeKeyDelegatorAddress   = "delegator_addr"
 )
 
 var Event2Type = map[string]string{
@@ -67,6 +73,13 @@ var Event2Type = map[string]string{
 	EventTypeUndelegateFailure:                TypeUnstake,
 	EventTypeUnjailSuccess:                    TypeUnjail,
 	EventTypeUnjailFailure:                    TypeUnjail,
+}
+
+var EventType2Behalf = map[string]string{
+	TypeStake:      TypeStakeOnBehalf,
+	TypeRedelegate: TypeRedelegateOnBehalf,
+	TypeUnstake:    TypeUnstakeOnBehalf,
+	TypeUnjail:     TypeUnjailOnBehalf,
 }
 
 type CLStakingEventIndexer struct {
@@ -186,6 +199,45 @@ func (c *CLStakingEventIndexer) getStakingEvents(from, to int64) ([]*db.CLStakin
 			}
 
 			attrMap := attrArray2Map(e.Attributes)
+
+			// Check if it's a unbehalf txn
+			switch eventType {
+			case TypeStake, TypeRedelegate, TypeUnstake:
+				delAddr, ok := attrMap[AttributeKeyDelegatorAddress]
+				if !ok {
+					return nil, fmt.Errorf("event %s: delegator address not found", eventType)
+				}
+				senderAddr, ok := attrMap[AttributeKeySenderAddress]
+				if !ok {
+					return nil, fmt.Errorf("event %s: sender address not found", eventType)
+				}
+
+				if strings.ToLower(delAddr) != strings.ToLower(senderAddr) {
+					eventType = EventType2Behalf[eventType]
+				}
+			case TypeUnjail:
+				valCmpPubKey, ok := attrMap[AttributeKeyValidatorCmpPubKey]
+				if !ok {
+					return nil, fmt.Errorf("event %s: validator compressed key not found", eventType)
+				}
+				senderAddr, ok := attrMap[AttributeKeySenderAddress]
+				if !ok {
+					return nil, fmt.Errorf("event %s: sender address not found", eventType)
+				}
+
+				valCmpPubKeyBytes, err := hex.DecodeString(valCmpPubKey)
+				if err != nil {
+					return nil, fmt.Errorf("decode validator compressed key from event %s failed: %w", eventType, err)
+				}
+				valAddr, err := util.CmpPubKeyToEVMAddress(valCmpPubKeyBytes)
+				if err != nil {
+					return nil, fmt.Errorf("convert validator compressed key to address from event %s failed: %w", eventType, err)
+				}
+
+				if strings.ToLower(valAddr.String()) != strings.ToLower(senderAddr) {
+					eventType = EventType2Behalf[eventType]
+				}
+			}
 
 			errCode, exists := attrMap[AttributeKeyErrorCode]
 

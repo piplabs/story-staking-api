@@ -1,6 +1,7 @@
 package server
 
 import (
+	"errors"
 	"net/http"
 	"strconv"
 	"strings"
@@ -9,6 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog/log"
 	"github.com/shopspring/decimal"
+	"gorm.io/gorm"
 
 	"github.com/piplabs/story-staking-api/cache"
 	"github.com/piplabs/story-staking-api/db"
@@ -240,7 +242,16 @@ func (s *Server) RewardsHandler() gin.HandlerFunc {
 
 		// Get from database
 		rewards, err := db.GetELRewards(s.dbOperator, evmAddr)
-		if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			c.JSON(http.StatusOK, Response{
+				Code: http.StatusOK,
+				Msg: RewardsData{
+					Address: evmAddr,
+					Amount:  "0",
+				},
+			})
+			return
+		} else if err != nil {
 			logger.Error().Err(err).Msg("failed to get rewards")
 			c.JSON(http.StatusOK, Response{
 				Code:  http.StatusInternalServerError,

@@ -163,6 +163,8 @@ func GetDistributionParams(apiEndpoint string) (*QueryResponse[DistributionParam
 	resp, err := callAPI(apiEndpoint, "/distribution/params", nil)
 	if err != nil {
 		return nil, err
+	} else if resp.StatusCode != http.StatusOK {
+		return nil, errors.New(resp.Status)
 	}
 	defer resp.Body.Close()
 
@@ -171,7 +173,7 @@ func GetDistributionParams(apiEndpoint string) (*QueryResponse[DistributionParam
 		return nil, err
 	}
 
-	log.Info().Str("helper api", "/distribution/params").Str("response", string(bodyBytes)).Msg("get distribution params")
+	log.Info().Str("helper api", "/distribution/params").Int("status_code", resp.StatusCode).Str("response", string(bodyBytes)).Msg("get distribution params")
 
 	var res QueryResponse[DistributionParamsResponse]
 	if err := json.Unmarshal(bodyBytes, &res); err != nil {
@@ -189,6 +191,8 @@ func GetMintParams(apiEndpoint string) (*QueryResponse[MintParamsResponse], erro
 	resp, err := callAPI(apiEndpoint, "/mint/params", nil)
 	if err != nil {
 		return nil, err
+	} else if resp.StatusCode != http.StatusOK {
+		return nil, errors.New(resp.Status)
 	}
 	defer resp.Body.Close()
 
@@ -213,6 +217,8 @@ func GetStakingPool(apiEndpoint string) (*QueryResponse[StakingPoolResponse], er
 	resp, err := callAPI(apiEndpoint, "/staking/pool", nil)
 	if err != nil {
 		return nil, err
+	} else if resp.StatusCode != http.StatusOK {
+		return nil, errors.New(resp.Status)
 	}
 	defer resp.Body.Close()
 
@@ -237,6 +243,8 @@ func GetStakingValidators(apiEndpoint string, params map[string]string) (*QueryR
 	resp, err := callAPI(apiEndpoint, "/staking/validators", params)
 	if err != nil {
 		return nil, err
+	} else if resp.StatusCode != http.StatusOK {
+		return nil, errors.New(resp.Status)
 	}
 	defer resp.Body.Close()
 
@@ -261,6 +269,8 @@ func GetStakingValidator(apiEndpoint, validatorAddr string) (*QueryResponse[Vali
 	resp, err := callAPI(apiEndpoint, fmt.Sprintf("/staking/validators/%s", validatorAddr), nil)
 	if err != nil {
 		return nil, err
+	} else if resp.StatusCode != http.StatusOK {
+		return nil, errors.New(resp.Status)
 	}
 	defer resp.Body.Close()
 
@@ -285,6 +295,8 @@ func GetStakingValidatorDelegations(apiEndpoint, validatorAddr string, params ma
 	resp, err := callAPI(apiEndpoint, fmt.Sprintf("/staking/validators/%s/delegations", validatorAddr), params)
 	if err != nil {
 		return nil, err
+	} else if resp.StatusCode != http.StatusOK {
+		return nil, errors.New(resp.Status)
 	}
 	defer resp.Body.Close()
 
@@ -309,6 +321,8 @@ func GetStakingDelegation(apiEndpoint, validatorAddr, delegatorAddr string) (*Qu
 	resp, err := callAPI(apiEndpoint, fmt.Sprintf("/staking/validators/%s/delegations/%s", validatorAddr, delegatorAddr), nil)
 	if err != nil {
 		return nil, err
+	} else if resp.StatusCode != http.StatusOK {
+		return nil, errors.New(resp.Status)
 	}
 	defer resp.Body.Close()
 
@@ -333,6 +347,8 @@ func GetStakingValidatorDelegatorPeriodDelegations(apiEndpoint, validatorAddr, d
 	resp, err := callAPI(apiEndpoint, fmt.Sprintf("/staking/validators/%s/delegators/%s/period_delegations", validatorAddr, delegatorAddr), params)
 	if err != nil {
 		return nil, err
+	} else if resp.StatusCode != http.StatusOK {
+		return nil, errors.New(resp.Status)
 	}
 	defer resp.Body.Close()
 
@@ -357,6 +373,8 @@ func GetStakingValidatorDelegatorPeriodDelegation(apiEndpoint, validatorAddr, de
 	resp, err := callAPI(apiEndpoint, fmt.Sprintf("/staking/validators/%s/delegators/%s/period_delegations/%s", validatorAddr, delegatorAddr, delegationID), nil)
 	if err != nil {
 		return nil, err
+	} else if resp.StatusCode != http.StatusOK {
+		return nil, errors.New(resp.Status)
 	}
 	defer resp.Body.Close()
 
@@ -381,6 +399,8 @@ func GetStakingDelegatorDelegations(apiEndpoint, delegatorAddr string, params ma
 	resp, err := callAPI(apiEndpoint, fmt.Sprintf("/staking/delegations/%s", delegatorAddr), params)
 	if err != nil {
 		return nil, err
+	} else if resp.StatusCode != http.StatusOK {
+		return nil, errors.New(resp.Status)
 	}
 	defer resp.Body.Close()
 
@@ -405,6 +425,8 @@ func GetStakingDelegatorUnbondingDelegations(apiEndpoint, delegatorAddr string, 
 	resp, err := callAPI(apiEndpoint, fmt.Sprintf("/staking/delegators/%s/unbonding_delegations", delegatorAddr), params)
 	if err != nil {
 		return nil, err
+	} else if resp.StatusCode != http.StatusOK {
+		return nil, errors.New(resp.Status)
 	}
 	defer resp.Body.Close()
 

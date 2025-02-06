@@ -144,63 +144,60 @@ func (c *CLStakingEventIndexer) Run() {
 }
 
 func (c *CLStakingEventIndexer) index(from, to int64) error {
-	var clStakingEvents []*db.CLStakingEvent
+	start := from
 
-	for i := from; i <= to; i++ {
-		events, err := c.getBlockEvents(i)
+	for start <= to {
+		end := min(start+100, to)
+
+		stakingEvents, err := c.getStakingEvents(start, end)
 		if err != nil {
 			return err
 		}
 
-		clStakingEvents = append(clStakingEvents, events...)
-
-		if len(clStakingEvents) > 100 {
-			if err := db.BatchCreateCLStakingEvents(c.dbOperator, c.Name(), clStakingEvents, i); err != nil {
-				return err
-			}
-			clStakingEvents = make([]*db.CLStakingEvent, 0)
+		if err := db.BatchCreateCLStakingEvents(c.dbOperator, c.Name(), stakingEvents, end); err != nil {
+			return err
 		}
-	}
 
-	// Handle remaining entries, even if there are no entries, we also need to update the index point.
-	if err := db.BatchCreateCLStakingEvents(c.dbOperator, c.Name(), clStakingEvents, to); err != nil {
-		return err
+		start = end + 1
 	}
 
 	return nil
 }
 
-func (c *CLStakingEventIndexer) getBlockEvents(blkno int64) ([]*db.CLStakingEvent, error) {
-	blockResults, err := c.cometClient.BlockResults(c.ctx, &blkno)
-	if err != nil {
-		return nil, err
-	}
-
-	blockEvents := make([]abcitypes.Event, 0)
-	for _, tr := range blockResults.TxsResults {
-		blockEvents = append(blockEvents, tr.Events...)
-	}
-	blockEvents = append(blockEvents, blockResults.FinalizeBlockEvents...)
-
+func (c *CLStakingEventIndexer) getStakingEvents(from, to int64) ([]*db.CLStakingEvent, error) {
 	stakingCLEvents := make([]*db.CLStakingEvent, 0)
-	for _, e := range blockEvents {
-		eventType, ok := Event2Type[e.Type]
-		if !ok {
-			continue
+
+	for blkno := from; blkno <= to; blkno++ {
+		blockResults, err := c.cometClient.BlockResults(c.ctx, &blkno)
+		if err != nil {
+			return nil, err
 		}
 
-		attrMap := attrArray2Map(e.Attributes)
+		blockEvents := make([]abcitypes.Event, 0)
+		for _, tr := range blockResults.TxsResults {
+			blockEvents = append(blockEvents, tr.Events...)
+		}
+		blockEvents = append(blockEvents, blockResults.FinalizeBlockEvents...)
 
-		errCode, exists := attrMap[AttributeKeyErrorCode]
+		for _, e := range blockEvents {
+			eventType, ok := Event2Type[e.Type]
+			if !ok {
+				continue
+			}
 
-		stakingCLEvents = append(stakingCLEvents, &db.CLStakingEvent{
-			ELTxHash:    "0x" + attrMap[AttributeKeyTxHash],
-			EventType:   eventType,
-			BlockHeight: blkno,
-			StatusOK:    !exists,
-			ErrorCode:   errCode,
-			Amount:      attrMap[AttributeKeyAmount],
-		})
+			attrMap := attrArray2Map(e.Attributes)
+
+			errCode, exists := attrMap[AttributeKeyErrorCode]
+
+			stakingCLEvents = append(stakingCLEvents, &db.CLStakingEvent{
+				ELTxHash:    "0x" + attrMap[AttributeKeyTxHash],
+				EventType:   eventType,
+				BlockHeight: blkno,
+				StatusOK:    !exists,
+				ErrorCode:   errCode,
+				Amount:      attrMap[AttributeKeyAmount],
+			})
+		}
 	}
 
 	return stakingCLEvents, nil

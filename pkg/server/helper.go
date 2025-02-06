@@ -56,6 +56,14 @@ type ValidatorInfo struct {
 	Description     struct {
 		Moniker string `json:"moniker"`
 	} `json:"description"`
+	Commission struct {
+		CommissionRates struct {
+			Rate          string `json:"rate"`
+			MaxRate       string `json:"max_rate"`
+			MaxChangeRate string `json:"max_change_rate"`
+		} `json:"commission_rates"`
+		UpdateTime string `json:"update_time"`
+	} `json:"commission"`
 }
 
 type ValidatorResponse struct {

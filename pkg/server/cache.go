@@ -18,6 +18,8 @@ func GetCachedData[T any](ctx context.Context, rdb *redis.Client, key string) (*
 		return nil, false
 	}
 
+	log.Info().Str("key", key).Str("cache_data", cacheData).Msg("get cached data")
+
 	var result T
 	if err := json.Unmarshal([]byte(cacheData), &result); err != nil {
 		log.Error().Err(err).Str("key", key).Msg("failed to unmarshal cached data")
@@ -33,6 +35,8 @@ func SetCachedData[T any](ctx context.Context, rdb *redis.Client, key string, da
 		log.Error().Err(err).Str("key", key).Msg("failed to marshal data")
 		return false
 	}
+
+	log.Info().Str("key", key).Str("cache_data", string(jsonData)).Msg("set cached data")
 
 	if err := cache.SetRedisData(ctx, rdb, key, string(jsonData)); err != nil {
 		log.Error().Err(err).Str("key", key).Msg("failed to cache data")

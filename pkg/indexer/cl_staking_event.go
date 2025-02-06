@@ -46,27 +46,27 @@ const (
 	AttributeKeyAmount             = "amount"
 )
 
-var EventSet = map[string]struct{}{
-	EventTypeUpdateValidatorCommissionSuccess: {},
-	EventTypeUpdateValidatorCommissionFailure: {},
-	EventTypeSetWithdrawalAddressSuccess:      {},
-	EventTypeSetWithdrawalAddressFailure:      {},
-	EventTypeSetRewardAddressSuccess:          {},
-	EventTypeSetRewardAddressFailure:          {},
-	EventTypeSetOperatorSuccess:               {},
-	EventTypeSetOperatorFailure:               {},
-	EventTypeUnsetOperatorSuccess:             {},
-	EventTypeUnsetOperatorFailure:             {},
-	EventTypeCreateValidatorSuccess:           {},
-	EventTypeCreateValidatorFailure:           {},
-	EventTypeDelegateSuccess:                  {},
-	EventTypeDelegateFailure:                  {},
-	EventTypeRedelegateSuccess:                {},
-	EventTypeRedelegateFailure:                {},
-	EventTypeUndelegateSuccess:                {},
-	EventTypeUndelegateFailure:                {},
-	EventTypeUnjailSuccess:                    {},
-	EventTypeUnjailFailure:                    {},
+var Event2Type = map[string]string{
+	EventTypeUpdateValidatorCommissionSuccess: TypeUpdateValidatorCommission,
+	EventTypeUpdateValidatorCommissionFailure: TypeUpdateValidatorCommission,
+	EventTypeSetWithdrawalAddressSuccess:      TypeSetWithdrawalAddress,
+	EventTypeSetWithdrawalAddressFailure:      TypeSetWithdrawalAddress,
+	EventTypeSetRewardAddressSuccess:          TypeSetRewardAddress,
+	EventTypeSetRewardAddressFailure:          TypeSetRewardAddress,
+	EventTypeSetOperatorSuccess:               TypeSetOperator,
+	EventTypeSetOperatorFailure:               TypeSetOperator,
+	EventTypeUnsetOperatorSuccess:             TypeUnsetOperator,
+	EventTypeUnsetOperatorFailure:             TypeUnsetOperator,
+	EventTypeCreateValidatorSuccess:           TypeCreateValidator,
+	EventTypeCreateValidatorFailure:           TypeCreateValidator,
+	EventTypeDelegateSuccess:                  TypeStake,
+	EventTypeDelegateFailure:                  TypeStake,
+	EventTypeRedelegateSuccess:                TypeRedelegate,
+	EventTypeRedelegateFailure:                TypeRedelegate,
+	EventTypeUndelegateSuccess:                TypeUnstake,
+	EventTypeUndelegateFailure:                TypeUnstake,
+	EventTypeUnjailSuccess:                    TypeUnjail,
+	EventTypeUnjailFailure:                    TypeUnjail,
 }
 
 type CLStakingEventIndexer struct {
@@ -184,7 +184,8 @@ func (c *CLStakingEventIndexer) getBlockEvents(blkno int64) ([]*db.CLStakingEven
 
 	stakingCLEvents := make([]*db.CLStakingEvent, 0)
 	for _, e := range blockEvents {
-		if _, ok := EventSet[e.Type]; !ok {
+		eventType, ok := Event2Type[e.Type]
+		if !ok {
 			continue
 		}
 
@@ -194,6 +195,7 @@ func (c *CLStakingEventIndexer) getBlockEvents(blkno int64) ([]*db.CLStakingEven
 
 		stakingCLEvents = append(stakingCLEvents, &db.CLStakingEvent{
 			ELTxHash:    "0x" + attrMap[AttributeKeyTxHash],
+			EventType:   eventType,
 			BlockHeight: blkno,
 			StatusOK:    !exists,
 			ErrorCode:   errCode,

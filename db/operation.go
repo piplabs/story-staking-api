@@ -28,7 +28,7 @@ func GetOperations(db *gorm.DB, evmAddr string, page, perPage int) ([]*Operation
 	offset := (page - 1) * perPage
 
 	query := db.Table("el_staking_events AS el").
-		Joins("INNER JOIN cl_staking_events AS cl ON el.tx_hash = cl.el_tx_hash").
+		Joins("INNER JOIN cl_staking_events AS cl ON el.tx_hash = cl.el_tx_hash AND el.event_type = cl.event_type").
 		Where("el.address = ?", evmAddr)
 
 	// Perform the count query
@@ -43,14 +43,14 @@ func GetOperations(db *gorm.DB, evmAddr string, page, perPage int) ([]*Operation
 		Select(`
 			el.tx_hash AS tx_hash,
 			el.block_height AS block_height,
-			el.event_type,
-			el.address,
-			el.src_validator_address,
-			el.dst_validator_address,
-			el.dst_address,
-			cl.status_ok,
-			cl.error_code,
-			cl.amount
+			el.event_type AS event_type,
+			el.address AS address,
+			el.src_validator_address AS src_validator_address,
+			el.dst_validator_address AS dst_validator_address,
+			el.dst_address AS dst_address,
+			cl.status_ok AS status_ok,
+			cl.error_code AS error_code,
+			cl.amount AS amount
 		`).
 		Order("el.block_height DESC").
 		Limit(perPage).

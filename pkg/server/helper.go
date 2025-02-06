@@ -9,6 +9,7 @@ import (
 	"net/url"
 
 	"github.com/gin-gonic/gin"
+	"github.com/rs/zerolog/log"
 )
 
 type QueryResponse[T any] struct {
@@ -169,6 +170,8 @@ func GetDistributionParams(apiEndpoint string) (*QueryResponse[DistributionParam
 	if err != nil {
 		return nil, err
 	}
+
+	log.Info().Str("helper api", "/distribution/params").Str("response", string(bodyBytes)).Msg("get distribution params")
 
 	var res QueryResponse[DistributionParamsResponse]
 	if err := json.Unmarshal(bodyBytes, &res); err != nil {

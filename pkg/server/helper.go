@@ -24,10 +24,7 @@ type Pagination struct {
 
 type DistributionParamsResponse struct {
 	Params struct {
-		Ubi               string `json:"ubi"`
-		MintDenom         string `json:"mint_denom"`
-		InflationsPerYear string `json:"inflations_per_year"`
-		BlocksPerYear     string `json:"blocks_per_year"`
+		Ubi string `json:"ubi"`
 	} `json:"params"`
 }
 

@@ -8,8 +8,6 @@ import (
 	"time"
 
 	abcitypes "github.com/cometbft/cometbft/abci/types"
-	lightprovider "github.com/cometbft/cometbft/light/provider"
-	lighthttp "github.com/cometbft/cometbft/light/provider/http"
 	comethttp "github.com/cometbft/cometbft/rpc/client/http"
 	redis "github.com/redis/go-redis/v9"
 	"github.com/rs/zerolog/log"
@@ -88,17 +86,11 @@ type CLStakingEventIndexer struct {
 	dbOperator    *gorm.DB
 	cacheOperator *redis.Client
 
-	cometClient      *comethttp.HTTP
-	lightCometClient lightprovider.Provider
+	cometClient *comethttp.HTTP
 }
 
-func NewCLStakingEventIndexer(ctx context.Context, dbOperator *gorm.DB, cacheOperator *redis.Client, chainID, rpcEndpoint string) (*CLStakingEventIndexer, error) {
+func NewCLStakingEventIndexer(ctx context.Context, dbOperator *gorm.DB, cacheOperator *redis.Client, rpcEndpoint string) (*CLStakingEventIndexer, error) {
 	cometClient, err := comethttp.New(rpcEndpoint, "")
-	if err != nil {
-		return nil, err
-	}
-
-	lightCometClient, err := lighthttp.New(chainID, rpcEndpoint)
 	if err != nil {
 		return nil, err
 	}
@@ -109,8 +101,7 @@ func NewCLStakingEventIndexer(ctx context.Context, dbOperator *gorm.DB, cacheOpe
 		dbOperator:    dbOperator,
 		cacheOperator: cacheOperator,
 
-		cometClient:      cometClient,
-		lightCometClient: lightCometClient,
+		cometClient: cometClient,
 	}, nil
 }
 
@@ -135,21 +126,21 @@ func (c *CLStakingEventIndexer) Run() {
 				continue
 			}
 
-			latestBlk, err := c.lightCometClient.LightBlock(c.ctx, 0)
+			latestBlk, err := c.cometClient.Block(c.ctx, nil)
 			if err != nil {
 				log.Error().Err(err).Str("indexer", c.Name()).Msg("get latest cl block failed")
 				continue
 			}
 
-			if indexPoint.BlockHeight+10 > latestBlk.Height {
+			if indexPoint.BlockHeight+10 > latestBlk.Block.Height {
 				continue
 			}
 
-			if err := c.index(indexPoint.BlockHeight+1, latestBlk.Height); err != nil {
+			if err := c.index(indexPoint.BlockHeight+1, latestBlk.Block.Height); err != nil {
 				log.Error().Err(err).
 					Str("indexer", c.Name()).
 					Int64("from", indexPoint.BlockHeight).
-					Int64("to", latestBlk.Height).
+					Int64("to", latestBlk.Block.Height).
 					Msg("index cl staking event failed")
 			}
 		}

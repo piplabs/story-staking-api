@@ -226,19 +226,19 @@ func (s *Server) setupHealthCheckAPI() {
 }
 
 func (s *Server) setupIndexers() error {
-	clBlockIndexer, err := indexer.NewCLBlockIndexer(s.ctx, s.dbOperator, s.cacheOperator, s.conf.Blockchain.ConsensusChainID, s.conf.Blockchain.CometbftRPCEndpoint)
+	clBlockIndexer, err := indexer.NewCLBlockIndexer(s.ctx, s.dbOperator, s.cacheOperator, s.conf.Blockchain.CometbftRPCEndpoint)
 	if err != nil {
 		return err
 	}
 	s.indexers = append(s.indexers, clBlockIndexer)
 
-	clStakingEventIndexer, err := indexer.NewCLStakingEventIndexer(s.ctx, s.dbOperator, s.cacheOperator, s.conf.Blockchain.ConsensusChainID, s.conf.Blockchain.CometbftRPCEndpoint)
+	clStakingEventIndexer, err := indexer.NewCLStakingEventIndexer(s.ctx, s.dbOperator, s.cacheOperator, s.conf.Blockchain.CometbftRPCEndpoint)
 	if err != nil {
 		return err
 	}
 	s.indexers = append(s.indexers, clStakingEventIndexer)
 
-	clValidatorUptimeIndexer, err := indexer.NewCLValidatorUptimeIndexer(s.ctx, s.dbOperator, s.cacheOperator, s.conf.Blockchain.ConsensusChainID, s.conf.Blockchain.CometbftRPCEndpoint)
+	clValidatorUptimeIndexer, err := indexer.NewCLValidatorUptimeIndexer(s.ctx, s.dbOperator, s.cacheOperator, s.conf.Blockchain.CometbftRPCEndpoint)
 	if err != nil {
 		return err
 	}

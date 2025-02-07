@@ -4,8 +4,7 @@ import (
 	"context"
 	"time"
 
-	lightprovider "github.com/cometbft/cometbft/light/provider"
-	lighthttp "github.com/cometbft/cometbft/light/provider/http"
+	comethttp "github.com/cometbft/cometbft/rpc/client/http"
 	redis "github.com/redis/go-redis/v9"
 	"github.com/rs/zerolog/log"
 	"gorm.io/gorm"
@@ -21,11 +20,11 @@ type CLBlockIndexer struct {
 	dbOperator    *gorm.DB
 	cacheOperator *redis.Client
 
-	lightCometClient lightprovider.Provider
+	cometClient *comethttp.HTTP
 }
 
-func NewCLBlockIndexer(ctx context.Context, dbOperator *gorm.DB, cacheOperator *redis.Client, chainID, rpcEndpoint string) (*CLBlockIndexer, error) {
-	lightCometClient, err := lighthttp.New(chainID, rpcEndpoint)
+func NewCLBlockIndexer(ctx context.Context, dbOperator *gorm.DB, cacheOperator *redis.Client, rpcEndpoint string) (*CLBlockIndexer, error) {
+	cometClient, err := comethttp.New(rpcEndpoint, "")
 	if err != nil {
 		return nil, err
 	}
@@ -36,7 +35,7 @@ func NewCLBlockIndexer(ctx context.Context, dbOperator *gorm.DB, cacheOperator *
 		dbOperator:    dbOperator,
 		cacheOperator: cacheOperator,
 
-		lightCometClient: lightCometClient,
+		cometClient: cometClient,
 	}, nil
 }
 
@@ -61,21 +60,21 @@ func (c *CLBlockIndexer) Run() {
 				continue
 			}
 
-			latestBlk, err := c.lightCometClient.LightBlock(c.ctx, 0)
+			latestBlk, err := c.cometClient.Block(c.ctx, nil)
 			if err != nil {
 				log.Error().Err(err).Str("indexer", c.Name()).Msg("get latest cl block failed")
 				continue
 			}
 
-			if indexPoint.BlockHeight+10 > latestBlk.Height {
+			if indexPoint.BlockHeight+10 > latestBlk.Block.Height {
 				continue
 			}
 
-			if err := c.index(indexPoint.BlockHeight+1, latestBlk.Height); err != nil {
+			if err := c.index(indexPoint.BlockHeight+1, latestBlk.Block.Height); err != nil {
 				log.Error().Err(err).
 					Str("indexer", c.Name()).
 					Int64("from", indexPoint.BlockHeight).
-					Int64("to", latestBlk.Height).
+					Int64("to", latestBlk.Block.Height).
 					Msg("index cl block failed")
 			}
 		}
@@ -86,16 +85,16 @@ func (c *CLBlockIndexer) index(from, to int64) error {
 	var blocks []*db.CLBlock
 
 	for i := from; i <= to; i++ {
-		blk, err := c.lightCometClient.LightBlock(c.ctx, i)
+		blk, err := c.cometClient.Block(c.ctx, &i)
 		if err != nil {
 			return err
 		}
 
 		blocks = append(blocks, &db.CLBlock{
-			Height:          blk.Height,
-			Hash:            blk.Hash().String(),
-			ProposerAddress: blk.ProposerAddress.String(),
-			Time:            blk.Time,
+			Height:          blk.Block.Height,
+			Hash:            blk.Block.Hash().String(),
+			ProposerAddress: blk.Block.ProposerAddress.String(),
+			Time:            blk.Block.Time,
 		})
 
 		if len(blocks) > 100 {

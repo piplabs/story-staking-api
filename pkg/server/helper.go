@@ -64,6 +64,7 @@ type ValidatorInfo struct {
 		} `json:"commission_rates"`
 		UpdateTime string `json:"update_time"`
 	} `json:"commission"`
+	SupportTokenType int `json:"support_token_type"`
 }
 
 type ValidatorResponse struct {

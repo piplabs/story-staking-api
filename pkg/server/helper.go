@@ -103,6 +103,7 @@ type PeriodDelegationInfo struct {
 		DelegatorAddress   string `json:"delegator_address"`
 		ValidatorAddress   string `json:"validator_address"`
 		PeriodDelegationID string `json:"period_delegation_id"`
+		PeriodType         int    `json:"period_type"`
 		Shares             string `json:"shares"`
 		RewardsShares      string `json:"rewards_shares"`
 		EndTime            string `json:"end_time"`

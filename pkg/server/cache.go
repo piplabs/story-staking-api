@@ -13,7 +13,9 @@ import (
 
 func GetCachedData[T any](ctx context.Context, rdb *redis.Client, key string) (*T, bool) {
 	cacheData, err := cache.GetRedisData(ctx, rdb, key)
-	if err != nil && !errors.Is(err, redis.Nil) {
+	if errors.Is(err, redis.Nil) {
+		return nil, false
+	} else if err != nil {
 		log.Error().Err(err).Str("key", key).Msg("failed to get data from cache")
 		return nil, false
 	}

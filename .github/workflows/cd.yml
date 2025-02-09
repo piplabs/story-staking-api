@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - 'staging'
+      - 'main'
 
 env:
   APP_NAME: staking-api
@@ -15,11 +16,7 @@ jobs:
     name: Build and Push Image, Update Helm Chart
     runs-on: ubuntu-latest
 
-    # strategy:
-    #   matrix:
-    #     env: [staging, production]
-
-    environment: staging
+    environment: ${{ (github.ref_name == 'main') && 'production' || 'staging' }}
 
     steps:
       - name: Checkout Repository

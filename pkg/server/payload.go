@@ -43,6 +43,7 @@ type RewardsData struct {
 type StakingValidatorData struct {
 	ValidatorInfo
 	Uptime string `json:"uptime"`
+	APR    string `json:"apr"`
 }
 
 type StakingValidatorsData struct {

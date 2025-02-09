@@ -16,6 +16,49 @@ import (
 	"github.com/piplabs/story-staking-api/db"
 )
 
+func (s *Server) GetSystemAPRPercentage() (decimal.Decimal, error) {
+	distParamsResp, err := GetDistributionParams(s.conf.Blockchain.StoryAPIEndpoint)
+	if err != nil {
+		return decimal.Zero, err
+	}
+
+	mintParamsResp, err := GetMintParams(s.conf.Blockchain.StoryAPIEndpoint)
+	if err != nil {
+		return decimal.Zero, err
+	}
+
+	stakingPoolResp, err := GetStakingPool(s.conf.Blockchain.StoryAPIEndpoint)
+	if err != nil {
+		return decimal.Zero, err
+	}
+
+	inflationsPerYear, err := decimal.NewFromString(mintParamsResp.Msg.Params.InflationsPerYear)
+	if err != nil {
+		return decimal.Zero, err
+	}
+
+	ubi := decimal.NewFromInt(0)
+	if distParamsResp.Msg.Params.Ubi != "" {
+		ubi, err = decimal.NewFromString(distParamsResp.Msg.Params.Ubi)
+		if err != nil {
+			return decimal.Zero, err
+		}
+	}
+
+	bondedTokens, err := decimal.NewFromString(stakingPoolResp.Msg.Pool.BondedTokens)
+	if err != nil {
+		return decimal.Zero, err
+	}
+
+	// APR = 100% * inflations_per_year * (1 - ubi) / bonded_tokens
+	aprPercentage := decimal.NewFromInt(100).
+		Mul(inflationsPerYear).
+		Mul(decimal.NewFromInt(1).Sub(ubi)).
+		Div(bondedTokens)
+
+	return aprPercentage, nil
+}
+
 func (s *Server) NetworkStatusHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		logger := log.With().Str("handler", "NetworkStatusHandler").Logger()
@@ -75,81 +118,19 @@ func (s *Server) EstimatedAPRHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		logger := log.With().Str("handler", "EstimatedAPRHandler").Logger()
 
-		distParamsResp, err := GetDistributionParams(s.conf.Blockchain.StoryAPIEndpoint)
+		sysAPR, err := s.GetSystemAPRPercentage()
 		if err != nil {
-			logger.Error().Err(err).Msg("failed to get distribution params")
+			logger.Error().Err(err).Msg("failed to get system apr")
 			c.JSON(http.StatusOK, Response{
 				Code:  http.StatusInternalServerError,
 				Error: ErrInternalAPIServiceError.Error(),
 			})
 			return
 		}
-
-		mintParamsResp, err := GetMintParams(s.conf.Blockchain.StoryAPIEndpoint)
-		if err != nil {
-			logger.Error().Err(err).Msg("failed to get mint params")
-			c.JSON(http.StatusOK, Response{
-				Code:  http.StatusInternalServerError,
-				Error: ErrInternalAPIServiceError.Error(),
-			})
-			return
-		}
-
-		stakingPoolResp, err := GetStakingPool(s.conf.Blockchain.StoryAPIEndpoint)
-		if err != nil {
-			logger.Error().Err(err).Msg("failed to get staking pool")
-			c.JSON(http.StatusOK, Response{
-				Code:  http.StatusInternalServerError,
-				Error: ErrInternalAPIServiceError.Error(),
-			})
-			return
-		}
-
-		inflationsPerYear, err := decimal.NewFromString(mintParamsResp.Msg.Params.InflationsPerYear)
-		if err != nil {
-			logger.Error().Err(err).Msg("failed to parse inflations per year")
-			c.JSON(http.StatusOK, Response{
-				Code:  http.StatusInternalServerError,
-				Error: ErrParseParameter.Error(),
-			})
-			return
-		}
-
-		ubi := decimal.NewFromInt(0)
-		if distParamsResp.Msg.Params.Ubi != "" {
-			ubi, err = decimal.NewFromString(distParamsResp.Msg.Params.Ubi)
-			if err != nil {
-				logger.Error().Err(err).Msg("failed to parse ubi")
-				c.JSON(http.StatusOK, Response{
-					Code:  http.StatusInternalServerError,
-					Error: ErrParseParameter.Error(),
-				})
-				return
-			}
-		}
-
-		bondedTokens, err := decimal.NewFromString(stakingPoolResp.Msg.Pool.BondedTokens)
-		if err != nil {
-			logger.Error().Err(err).Msg("failed to parse bonded tokens")
-			c.JSON(http.StatusOK, Response{
-				Code:  http.StatusInternalServerError,
-				Error: ErrParseParameter.Error(),
-			})
-			return
-		}
-
-		// APR = 100% * inflations_per_year * (1 - ubi) / bonded_tokens
-		aprPercentage := decimal.NewFromInt(100).
-			Mul(inflationsPerYear).
-			Mul(decimal.NewFromInt(1).Sub(ubi)).
-			Div(bondedTokens).
-			Truncate(2)
 
 		c.JSON(http.StatusOK, Response{
 			Code: http.StatusOK,
-			Msg: EstimatedAPRData{
-				APR: aprPercentage.String() + "%",
-			},
+			Msg:  sysAPR.Truncate(2).String() + "%",
 		})
 	}
 }
@@ -316,6 +297,16 @@ func (s *Server) StakingValidatorsHandler() gin.HandlerFunc {
 			return
 		}
 
+		sysAPR, err := s.GetSystemAPRPercentage()
+		if err != nil {
+			logger.Error().Err(err).Msg("failed to get system apr")
+			c.JSON(http.StatusOK, Response{
+				Code:  http.StatusInternalServerError,
+				Error: ErrInternalAPIServiceError.Error(),
+			})
+			return
+		}
+
 		// Query from API and database
 		stakingValidatorsResp, err := GetStakingValidators(s.conf.Blockchain.StoryAPIEndpoint, params)
 		if err != nil {
@@ -352,9 +343,22 @@ func (s *Server) StakingValidatorsHandler() gin.HandlerFunc {
 
 		validators := make([]StakingValidatorData, 0, len(stakingValidatorsResp.Msg.Validators))
 		for _, val := range stakingValidatorsResp.Msg.Validators {
+			commissionRate, err := decimal.NewFromString(val.Commission.CommissionRates.Rate)
+			if err != nil {
+				logger.Error().Err(err).Str("validator", val.OperatorAddress).Msg("failed to parse commission rate")
+				c.JSON(http.StatusOK, Response{
+					Code:  http.StatusInternalServerError,
+					Error: ErrInternalDataServiceError.Error(),
+				})
+				return
+			}
+
+			valAPR := sysAPR.Mul(decimal.NewFromInt(1).Sub(commissionRate)).Truncate(2).String() + "%"
+
 			validators = append(validators, StakingValidatorData{
 				ValidatorInfo: val,
 				Uptime:        clUptimesMap[strings.ToLower(val.OperatorAddress)],
+				APR:           valAPR,
 			})
 		}
 
@@ -382,6 +386,16 @@ func (s *Server) StakingValidatorHandler() gin.HandlerFunc {
 			c.JSON(http.StatusOK, Response{
 				Code:  http.StatusBadRequest,
 				Error: ErrInvalidParameter.Error(),
+			})
+			return
+		}
+
+		sysAPR, err := s.GetSystemAPRPercentage()
+		if err != nil {
+			logger.Error().Err(err).Msg("failed to get system apr")
+			c.JSON(http.StatusOK, Response{
+				Code:  http.StatusInternalServerError,
+				Error: ErrInternalAPIServiceError.Error(),
 			})
 			return
 		}
@@ -415,9 +429,22 @@ func (s *Server) StakingValidatorHandler() gin.HandlerFunc {
 				Truncate(2).String() + "%"
 		}
 
+		commissionRate, err := decimal.NewFromString(stakingValidatorResp.Msg.Validator.Commission.CommissionRates.Rate)
+		if err != nil {
+			logger.Error().Err(err).Str("validator", stakingValidatorResp.Msg.Validator.OperatorAddress).Msg("failed to parse commission rate")
+			c.JSON(http.StatusOK, Response{
+				Code:  http.StatusInternalServerError,
+				Error: ErrInternalDataServiceError.Error(),
+			})
+			return
+		}
+
+		valAPR := sysAPR.Mul(decimal.NewFromInt(1).Sub(commissionRate)).Truncate(2).String() + "%"
+
 		msg := StakingValidatorData{
 			ValidatorInfo: stakingValidatorResp.Msg.Validator,
 			Uptime:        clUptimesMap[strings.ToLower(stakingValidatorResp.Msg.Validator.OperatorAddress)],
+			APR:           valAPR,
 		}
 
 		c.JSON(http.StatusOK, Response{

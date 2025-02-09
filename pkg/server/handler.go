@@ -353,12 +353,16 @@ func (s *Server) StakingValidatorsHandler() gin.HandlerFunc {
 				return
 			}
 
-			valAPR := sysAPR.Mul(decimal.NewFromInt(1).Sub(commissionRate)).Truncate(2).String() + "%"
+			valAPR := sysAPR.Mul(decimal.NewFromInt(1).Sub(commissionRate))
+			// Locked token type has 0.5x APR
+			if val.SupportTokenType == 0 {
+				valAPR = valAPR.Div(decimal.NewFromInt(2))
+			}
 
 			validators = append(validators, StakingValidatorData{
 				ValidatorInfo: val,
 				Uptime:        clUptimesMap[strings.ToLower(val.OperatorAddress)],
-				APR:           valAPR,
+				APR:           valAPR.Truncate(2).String() + "%",
 			})
 		}
 
@@ -411,6 +415,8 @@ func (s *Server) StakingValidatorHandler() gin.HandlerFunc {
 			return
 		}
 
+		val := stakingValidatorResp.Msg.Validator
+
 		clUptimes, err := db.GetCLValidatorUptimes(s.dbOperator, valAddr)
 		if err != nil {
 			logger.Error().Err(err).Msg("failed to get cl uptimes")
@@ -429,9 +435,9 @@ func (s *Server) StakingValidatorHandler() gin.HandlerFunc {
 				Truncate(2).String() + "%"
 		}
 
-		commissionRate, err := decimal.NewFromString(stakingValidatorResp.Msg.Validator.Commission.CommissionRates.Rate)
+		commissionRate, err := decimal.NewFromString(val.Commission.CommissionRates.Rate)
 		if err != nil {
-			logger.Error().Err(err).Str("validator", stakingValidatorResp.Msg.Validator.OperatorAddress).Msg("failed to parse commission rate")
+			logger.Error().Err(err).Str("validator", val.OperatorAddress).Msg("failed to parse commission rate")
 			c.JSON(http.StatusOK, Response{
 				Code:  http.StatusInternalServerError,
 				Error: ErrInternalDataServiceError.Error(),
@@ -439,12 +445,16 @@ func (s *Server) StakingValidatorHandler() gin.HandlerFunc {
 			return
 		}
 
-		valAPR := sysAPR.Mul(decimal.NewFromInt(1).Sub(commissionRate)).Truncate(2).String() + "%"
+		valAPR := sysAPR.Mul(decimal.NewFromInt(1).Sub(commissionRate))
+		// Locked token type has 0.5x APR
+		if val.SupportTokenType == 0 {
+			valAPR = valAPR.Div(decimal.NewFromInt(2))
+		}
 
 		msg := StakingValidatorData{
-			ValidatorInfo: stakingValidatorResp.Msg.Validator,
-			Uptime:        clUptimesMap[strings.ToLower(stakingValidatorResp.Msg.Validator.OperatorAddress)],
-			APR:           valAPR,
+			ValidatorInfo: val,
+			Uptime:        clUptimesMap[strings.ToLower(val.OperatorAddress)],
+			APR:           valAPR.Truncate(2).String() + "%",
 		}
 
 		c.JSON(http.StatusOK, Response{

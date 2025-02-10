@@ -59,6 +59,26 @@ func (s *Server) GetSystemAPRPercentage() (decimal.Decimal, error) {
 	return aprPercentage, nil
 }
 
+func (s *Server) StakingParamsHandler() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		logger := log.With().Str("handler", "StakingParamsHandler").Logger()
+
+		stakingParamsResp, err := GetStakingParams(s.conf.Blockchain.StoryAPIEndpoint)
+		if err != nil {
+			logger.Error().Err(err).Msg("failed to get staking params")
+			c.JSON(http.StatusOK, Response{
+				Code:  http.StatusInternalServerError,
+				Error: ErrInternalAPIServiceError.Error(),
+			})
+			return
+		}
+
+		c.JSON(http.StatusOK, Response{
+			Code: http.StatusOK,
+			Msg:  stakingParamsResp.Msg,
+		})
+	}
+}
 func (s *Server) NetworkStatusHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		logger := log.With().Str("handler", "NetworkStatusHandler").Logger()

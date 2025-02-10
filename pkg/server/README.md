@@ -24,9 +24,9 @@
 #### Response
 
 - status: The status of the network.
-  - Normal: The network is running normally.
-  - Degraded: The network is congested but still operational.
-  - Down: The network is experiencing critical issues and is no longer operational.
+  - `Normal`: The network is running normally.
+  - `Degraded`: The network is congested but still operational.
+  - `Down`: The network is experiencing critical issues and is no longer operational.
 - consensus_block_height: The latest block height of the consensus layer.
 - execution_block_height: The latest block height of the execution layer.
 
@@ -166,6 +166,10 @@
 
 #### Response
 
+- pool: The staking pool info.
+  - bonded_tokens: The total number of bonded tokens in `gwei`.
+  - not_bonded_tokens: The total number of not bonded tokens in `gwei`.
+
 ```json
 {
   "code": 200,
@@ -187,7 +191,7 @@
 
 | Name                   | Type   | Example                                                               |
 |------------------------|--------|-----------------------------------------------------------------------|
-| status                 | string | `BOND_STATUS_BONDED`, `BOND_STATUS_UNBONDING`, `BOND_STATUS_UNBONDED` |
+| status                 | string | `BOND_STATUS_UNBONDED`, `BOND_STATUS_UNBONDING`, `BOND_STATUS_BONDED` |
 | pagination.key         | string |                                                                       |
 | pagination.offset      | string | 100                                                                   |
 | pagination.limit       | string | 10                                                                    |
@@ -201,9 +205,9 @@
   - consensus_pubkey: The base64 encoded compressed public key of the validator.
   - jailed: Whether the validator is jailed.
   - status: The status of the validator.
-    - 1: `BOND_STATUS_BONDED`
+    - 1: `BOND_STATUS_UNBONDED`
     - 2: `BOND_STATUS_UNBONDING`
-    - 3: `BOND_STATUS_UNBONDED`
+    - 3: `BOND_STATUS_BONDED`
   - tokens: The total staked tokens on the validator in `gwei`.
   - delegator_shares: The total delegator shares on the validator.
   - description: The description of the validator.

@@ -5,15 +5,16 @@
   - [3. Operation History](#3-operation-history)
   - [4. Delegator Accumulated Rewards](#4-delegator-accumulated-rewards)
 - [Native Story API](#native-story-api)
-  - [1. Staking Pool](#1-staking-pool)
-  - [2. Validators Info](#2-validators-info)
-  - [3. Validator Info](#3-validator-info)
-  - [4. Delegations of a Validator](#4-delegations-of-a-validator)
-  - [5. Delegation of a Validator](#5-delegation-of-a-validator)
-  - [6. Period Delegations of a Validator](#6-period-delegations-of-a-validator)
-  - [7. Period Delegation of a Validator](#7-period-delegation-of-a-validator)
-  - [8. Delegations of a Delegator](#8-delegations-of-a-delegator)
-  - [9. Unbonding Delegations of a Delegator](#9-unbonding-delegations-of-a-delegator)
+  - [1. Staking Params](#1-staking-params)
+  - [2. Staking Pool](#2-staking-pool)
+  - [3. Validators Info](#3-validators-info)
+  - [4. Validator Info](#4-validator-info)
+  - [5. Delegations of a Validator](#5-delegations-of-a-validator)
+  - [6. Delegation of a Validator](#6-delegation-of-a-validator)
+  - [7. Period Delegations of a Validator](#7-period-delegations-of-a-validator)
+  - [8. Period Delegation of a Validator](#8-period-delegation-of-a-validator)
+  - [9. Delegations of a Delegator](#9-delegations-of-a-delegator)
+  - [10. Unbonding Delegations of a Delegator](#10-unbonding-delegations-of-a-delegator)
 
 ## Indexed Data API
 
@@ -160,7 +161,87 @@
 
 ## Native Story API
 
-### 1. Staking Pool
+### 1. Staking Params
+
+[GET] `/api/staking/params`
+
+#### Response
+
+- params: The staking params.
+  - unbonding_time: The unbonding time in `nanoseconds`.
+  - max_validators: The max number of validators.
+  - max_entries: The max number of entries.
+  - historical_entries: The max number of historical entries.
+  - bond_denom: The denom of the token.
+  - min_commission_rate: The min commission rate for validators.
+  - min_delegation: The min delegation in `gwei`.
+  - periods: The staking periods.
+    - period_type: The type of the period.
+      - 0: `FLEXIBLE`
+      - 1: `SHORT`
+      - 2: `MEDIUM`
+      - 3: `LONG`
+    - duration: The minimum duration of the period in `nanoseconds`.
+    - rewards_multiplier: The rewards multiplier of the period.
+  - token_types: The types of the tokens.
+    - token_type: The type of the token.
+      - 0: `LOCKED`
+      - 1: `UNLOCKED`
+    - rewards_multiplier: The rewards multiplier of the token type.
+  - singularity_height: The singularity height.
+
+```json
+{
+  "code": 200,
+  "msg": {
+    "params": {
+      "unbonding_time": "10000000000000",
+      "max_validators": 32,
+      "max_entries": 14,
+      "historical_entries": 10000,
+      "bond_denom": "stake",
+      "min_commission_rate": "0.050000000000000000",
+      "min_delegation": "1024000000000",
+      "periods": [
+        {
+          "period_type": 0,
+          "duration": "0",
+          "rewards_multiplier": "1.000000000000000000"
+        },
+        {
+          "period_type": 1,
+          "duration": "60000000000",
+          "rewards_multiplier": "1.051000000000000000"
+        },
+        {
+          "period_type": 2,
+          "duration": "120000000000",
+          "rewards_multiplier": "1.160000000000000000"
+        },
+        {
+          "period_type": 3,
+          "duration": "900000000000",
+          "rewards_multiplier": "1.340000000000000000"
+        }
+      ],
+      "token_types": [
+        {
+          "token_type": 0,
+          "rewards_multiplier": "0.500000000000000000"
+        },
+        {
+          "token_type": 1,
+          "rewards_multiplier": "1.000000000000000000"
+        }
+      ],
+      "singularity_height": "10000"
+    }
+  },
+  "error": ""
+}
+```
+
+### 2. Staking Pool
 
 [GET] `/api/staking/pool`
 
@@ -183,7 +264,7 @@
 }
 ```
 
-### 2. Validators Info
+### 3. Validators Info
 
 [GET] `/api/staking/validators`
 
@@ -337,7 +418,7 @@
 }
 ```
 
-### 3. Validator Info
+### 4. Validator Info
 
 [GET] `/api/staking/validators/{validator_address}`
 
@@ -399,7 +480,7 @@
 }
 ```
 
-### 4. Delegations of a Validator
+### 5. Delegations of a Validator
 
 [GET] `/api/staking/validators/{validator_address}/delegations`
 
@@ -471,7 +552,7 @@
 }
 ```
 
-### 5. Delegation of a Validator
+### 6. Delegation of a Validator
 
 [GET] `/api/staking/validators/{validator_address}/delegations/{delegator_address}`
 
@@ -513,7 +594,7 @@
 }
 ```
 
-### 6. Period Delegations of a Validator
+### 7. Period Delegations of a Validator
 
 [GET] `/api/staking/validators/{validator_address}/delegators/{delegator_address}/period_delegations`
 
@@ -578,7 +659,7 @@
 }
 ```
 
-### 7. Period Delegation of a Validator
+### 8. Period Delegation of a Validator
 
 [GET] `/api/staking/validators/{validator_address}/delegators/{delegator_address}/period_delegations/{period_delegation_id}`
 
@@ -624,7 +705,7 @@
 }
 ```
 
-### 8. Delegations of a Delegator
+### 9. Delegations of a Delegator
 
 [GET] `/api/staking/delegations/{delegator_address}`
 
@@ -696,7 +777,7 @@
 }
 ```
 
-### 9. Unbonding Delegations of a Delegator
+### 10. Unbonding Delegations of a Delegator
 
 [GET] `/api/staking/delegators/{delegator_address}/unbonding_delegations`
 

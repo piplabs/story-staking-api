@@ -36,6 +36,28 @@ type MintParamsResponse struct {
 	} `json:"params"`
 }
 
+type StakingParamsResponse struct {
+	Params struct {
+		UnbondingTime     string `json:"unbonding_time"`
+		MaxValidators     int    `json:"max_validators"`
+		MaxEntries        int    `json:"max_entries"`
+		HistoricalEntries int    `json:"historical_entries"`
+		BondDenom         string `json:"bond_denom"`
+		MinCommissionRate string `json:"min_commission_rate"`
+		MinDelegation     string `json:"min_delegation"`
+		Periods           []struct {
+			PeriodType        int    `json:"period_type"`
+			Duration          string `json:"duration"`
+			RewardsMultiplier string `json:"rewards_multiplier"`
+		} `json:"periods"`
+		TokenTypes []struct {
+			TokenType         int    `json:"token_type"`
+			RewardsMultiplier string `json:"rewards_multiplier"`
+		} `json:"token_types"`
+		SingularityHeight string `json:"singularity_height"`
+	} `json:"params"`
+}
+
 type StakingPoolResponse struct {
 	Pool struct {
 		NotBondedTokens string `json:"not_bonded_tokens"`
@@ -201,6 +223,32 @@ func GetMintParams(apiEndpoint string) (*QueryResponse[MintParamsResponse], erro
 	}
 
 	var res QueryResponse[MintParamsResponse]
+	if err := json.Unmarshal(bodyBytes, &res); err != nil {
+		return nil, err
+	}
+
+	if res.Code != http.StatusOK {
+		return nil, errors.New(res.Error)
+	}
+
+	return &res, nil
+}
+
+func GetStakingParams(apiEndpoint string) (*QueryResponse[StakingParamsResponse], error) {
+	resp, err := callAPI(apiEndpoint, "/staking/params", nil)
+	if err != nil {
+		return nil, err
+	} else if resp.StatusCode != http.StatusOK {
+		return nil, errors.New(resp.Status)
+	}
+	defer resp.Body.Close()
+
+	bodyBytes, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	var res QueryResponse[StakingParamsResponse]
 	if err := json.Unmarshal(bodyBytes, &res); err != nil {
 		return nil, err
 	}

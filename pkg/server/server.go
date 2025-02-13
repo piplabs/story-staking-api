@@ -128,7 +128,6 @@ func (s *Server) initServices() error { // TODO: get pwd from secret manager
 		s.setupStakingAPI()
 	}
 	s.setupHealthCheckAPI()
-	s.setupMonitoringEndpoint()
 
 	// Setup database states and indexers for `writer` mode.
 	if s.conf.Server.IndexMode == IndexModeWriter {

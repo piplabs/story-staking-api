@@ -17,6 +17,7 @@ import (
 	"github.com/piplabs/story-staking-api/cache"
 	"github.com/piplabs/story-staking-api/db"
 	"github.com/piplabs/story-staking-api/pkg/indexer"
+	"github.com/piplabs/story-staking-api/pkg/metrics"
 )
 
 type Server struct {
@@ -170,6 +171,8 @@ func (s *Server) setupGinService() {
 	s.ginService.Use(gin.Logger())
 	s.ginService.Use(gin.Recovery())
 
+	s.setupMonitoringEndpoint()
+
 	s.httpServer = &http.Server{
 		Addr:    s.conf.Server.ServicePort,
 		Handler: s.ginService,
@@ -225,6 +228,11 @@ func (s *Server) setupHealthCheckAPI() {
 			"status":  "healthy",
 		})
 	})
+}
+
+func (s *Server) setupMonitoringEndpoint() {
+	s.ginService.Use(metrics.Middleware())
+	s.ginService.GET("/metrics", metrics.Handler())
 }
 
 func (s *Server) setupIndexers() error {

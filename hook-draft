@@ -1,0 +1,60 @@
+#!/bin/bash
+
+# 获取当前分支名称
+current_branch=$(git symbolic-ref --short HEAD)
+
+# 定义不需要处理的分支
+protected_branches=("main" "staging")
+
+# 检查当前分支是否需要处理
+if [[ " ${protected_branches[@]} " =~ " ${current_branch} " ]]; then
+  echo "当前分支是 ${current_branch}，跳过处理。"
+  exit 0
+fi
+
+# 1. 拉取 staging 分支并 rebase
+echo "正在执行 git pull --rebase origin staging..."
+git pull --rebase origin staging
+
+if [ $? -ne 0 ]; then
+  echo "Rebase 失败，请手动解决冲突后重试。"
+  exit 1
+fi
+
+# 2. 计算当前分支比 staging 多出的 commit 数量
+echo "正在计算当前分支比 staging 多出的 commit 数量..."
+staging_head=$(git rev-parse staging)
+commit_count=$(git rev-list --count ${staging_head}..HEAD)
+
+if [ $commit_count -le 1 ]; then
+  echo "当前分支只有 $commit_count 个 commit 在 staging 之后，无需压缩。"
+else
+  echo "当前分支比 staging 多出 $commit_count 个 commit，正在压缩..."
+
+  # 获取所有多出来的 commit message
+  commit_messages=$(git log --format=%B ${staging_head}..HEAD)
+
+  # 执行 git reset --soft HEAD~<number>
+  git reset --soft HEAD~${commit_count}
+
+  # 使用所有 commit message 作为新的 commit message
+  echo "正在创建新的 commit..."
+  git commit -m "${commit_messages}"
+
+  if [ $? -ne 0 ]; then
+    echo "压缩 commit 失败，请手动解决冲突后重试。"
+    exit 1
+  fi
+fi
+
+# 3. 使用 --force-with-lease 强制推送
+# echo "正在使用 --force-with-lease 强制推送..."
+# git push --force-with-lease
+
+if [ $? -ne 0 ]; then
+  echo "推送失败，请检查是否有其他人已经推送了更改。"
+  exit 1
+fi
+
+echo "推送成功！"
+exit 0

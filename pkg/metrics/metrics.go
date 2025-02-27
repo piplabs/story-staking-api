@@ -37,7 +37,7 @@ var (
 
 	RPCRequestErrorCounter = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
-			Name: "staking_api_rpc_req_errors_total",
+			Name: "staking_api_story_api_req_errors_total",
 			Help: "Total number of RPC request errors",
 		},
 		[]string{"endpoint"},

@@ -101,6 +101,11 @@ func NewPostgresClient(ctx context.Context, configFile string) (*gorm.DB, error)
 		return nil, err
 	}
 
+	err = db.Use(&MetricsPlugin{})
+	if err != nil {
+		return nil, err
+	}
+
 	sqlDB, err := db.DB()
 	if err != nil {
 		return nil, err

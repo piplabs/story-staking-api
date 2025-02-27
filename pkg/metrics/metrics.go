@@ -26,11 +26,20 @@ var (
 		},
 		[]string{"method", "path", "status"},
 	)
+
+	RPCRequestErrorCounter = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "staking_api_rpc_req_errors_total",
+			Help: "Total number of RPC request errors",
+		},
+		[]string{"endpoint"},
+	)
 )
 
 func init() {
 	prometheus.MustRegister(RequestCounter)
 	prometheus.MustRegister(RequestDuration)
+	prometheus.MustRegister(RPCRequestErrorCounter)
 }
 
 func Middleware() gin.HandlerFunc {

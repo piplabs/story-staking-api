@@ -9,6 +9,7 @@ import (
 	"net/url"
 
 	"github.com/gin-gonic/gin"
+	"github.com/piplabs/story-staking-api/pkg/metrics"
 )
 
 type QueryResponse[T any] struct {
@@ -505,7 +506,12 @@ func callAPI(apiEndpoint, apiURL string, params map[string]string) (*http.Respon
 		return nil, err
 	}
 
-	return http.DefaultClient.Do(req)
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		metrics.RPCRequestErrorCounter.WithLabelValues(reqURL)
+		return nil, err
+	}
+	return resp, nil
 }
 
 func buildURL(domain, path string, params map[string]string) (string, error) {

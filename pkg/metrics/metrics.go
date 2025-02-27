@@ -11,6 +11,14 @@ import (
 )
 
 var (
+	DBErrorCounter = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "staking_api_db_errors_total",
+			Help: "Total number of DB ops errors encountered",
+		},
+		[]string{},
+	)
+
 	RequestCounter = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
 			Name: "staking_api_http_requests_total",
@@ -37,6 +45,7 @@ var (
 )
 
 func init() {
+	prometheus.MustRegister(DBErrorCounter)
 	prometheus.MustRegister(RequestCounter)
 	prometheus.MustRegister(RequestDuration)
 	prometheus.MustRegister(RPCRequestErrorCounter)

@@ -511,6 +511,11 @@ func callAPI(apiEndpoint, apiURL string, params map[string]string) (*http.Respon
 		metrics.RPCRequestErrorCounter.WithLabelValues(reqURL)
 		return nil, err
 	}
+
+	if resp.StatusCode >= 400 {
+		metrics.RPCRequestErrorCounter.WithLabelValues(reqURL)
+	}
+
 	return resp, nil
 }
 

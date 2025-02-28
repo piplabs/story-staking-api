@@ -40,7 +40,7 @@ var (
 			Name: "staking_api_story_api_req_errors_total",
 			Help: "Total number of RPC request errors",
 		},
-		[]string{"endpoint"},
+		[]string{"story_endpoint"},
 	)
 )
 

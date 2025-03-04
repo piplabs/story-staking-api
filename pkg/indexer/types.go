@@ -16,3 +16,9 @@ const (
 	TypeUnjail                    = "Unjail"
 	TypeUnjailOnBehalf            = "UnjailOnBehalf"
 )
+
+const (
+	WithdrawalTypeUnstake = 0
+	WithdrawalTypeReward  = 1
+	WithdrawalTypeUBI     = 2
+)

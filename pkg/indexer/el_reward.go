@@ -97,6 +97,12 @@ func (e *ELRewardIndexer) index(from, to int64) error {
 		for _, w := range blk.Withdrawals() {
 			address := strings.ToLower(w.Address.String())
 
+			// In story, we use `Validator` field to store the withdrawal type.
+			if w.Validator != WithdrawalTypeReward {
+				// Skip, we only care about the reward withdrawal.
+				continue
+			}
+
 			newRewards := big.NewInt(int64(w.Amount))
 
 			if _, ok := elRewardsMap[address]; ok {

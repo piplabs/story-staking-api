@@ -27,14 +27,30 @@ func (s *Server) GetSystemAPRPercentage() (decimal.Decimal, error) {
 		return decimal.Zero, err
 	}
 
-	stakingPoolResp, err := GetStakingPool(s.conf.Blockchain.StoryAPIEndpoint)
+	inflationsPerYear, err := decimal.NewFromString(mintParamsResp.Msg.Params.InflationsPerYear)
 	if err != nil {
 		return decimal.Zero, err
 	}
 
-	inflationsPerYear, err := decimal.NewFromString(mintParamsResp.Msg.Params.InflationsPerYear)
+	activeValidatorsResp, err := GetStakingValidators(s.conf.Blockchain.StoryAPIEndpoint, map[string]string{
+		"pagination.limit":       "100",
+		"pagination.count_total": "true",
+	})
 	if err != nil {
 		return decimal.Zero, err
+	}
+
+	weightedBondedTokens := decimal.Zero
+	for _, val := range activeValidatorsResp.Msg.Validators {
+		valTokens, err := decimal.NewFromString(val.Tokens)
+		if err != nil {
+			return decimal.Zero, err
+		}
+		// Locked token type has 0.5x weight.
+		if val.SupportTokenType == TokenTypeLocked {
+			valTokens = valTokens.Div(decimal.NewFromInt(2))
+		}
+		weightedBondedTokens = weightedBondedTokens.Add(valTokens)
 	}
 
 	ubi := decimal.NewFromInt(0)
@@ -45,16 +61,11 @@ func (s *Server) GetSystemAPRPercentage() (decimal.Decimal, error) {
 		}
 	}
 
-	bondedTokens, err := decimal.NewFromString(stakingPoolResp.Msg.Pool.BondedTokens)
-	if err != nil {
-		return decimal.Zero, err
-	}
-
-	// APR = 100% * inflations_per_year * (1 - ubi) / bonded_tokens
+	// APR = 100% * inflations_per_year * (1 - ubi) / wighted_bonded_tokens
 	aprPercentage := decimal.NewFromInt(100).
 		Mul(inflationsPerYear).
 		Mul(decimal.NewFromInt(1).Sub(ubi)).
-		Div(bondedTokens)
+		Div(weightedBondedTokens)
 
 	return aprPercentage, nil
 }

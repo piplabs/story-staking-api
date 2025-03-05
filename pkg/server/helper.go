@@ -12,6 +12,11 @@ import (
 	"github.com/piplabs/story-staking-api/pkg/metrics"
 )
 
+const (
+	TokenTypeLocked   = 0
+	TokenTypeUnlocked = 1
+)
+
 type QueryResponse[T any] struct {
 	Code  int    `json:"code"`
 	Msg   T      `json:"msg"`

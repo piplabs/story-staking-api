@@ -80,6 +80,7 @@ type ValidatorInfo struct {
 	Jailed          bool   `json:"jailed"`
 	Status          int    `json:"status"`
 	Tokens          string `json:"tokens"`
+	RewardsTokens   string `json:"rewards_tokens"`
 	DelegatorShares string `json:"delegator_shares"`
 	Description     struct {
 		Moniker string `json:"moniker"`

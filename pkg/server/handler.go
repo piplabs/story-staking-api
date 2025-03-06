@@ -40,17 +40,13 @@ func (s *Server) GetSystemAPRPercentage() (decimal.Decimal, error) {
 		return decimal.Zero, err
 	}
 
-	weightedBondedTokens := decimal.Zero
+	bondedRewardsTokens := decimal.Zero
 	for _, val := range activeValidatorsResp.Msg.Validators {
-		valTokens, err := decimal.NewFromString(val.Tokens)
+		rewardsTokens, err := decimal.NewFromString(val.RewardsTokens)
 		if err != nil {
 			return decimal.Zero, err
 		}
-		// Locked token type has 0.5x weight.
-		if val.SupportTokenType == TokenTypeLocked {
-			valTokens = valTokens.Div(decimal.NewFromInt(2))
-		}
-		weightedBondedTokens = weightedBondedTokens.Add(valTokens)
+		bondedRewardsTokens = bondedRewardsTokens.Add(rewardsTokens)
 	}
 
 	ubi := decimal.NewFromInt(0)
@@ -65,7 +61,7 @@ func (s *Server) GetSystemAPRPercentage() (decimal.Decimal, error) {
 	aprPercentage := decimal.NewFromInt(100).
 		Mul(inflationsPerYear).
 		Mul(decimal.NewFromInt(1).Sub(ubi)).
-		Div(weightedBondedTokens)
+		Div(bondedRewardsTokens)
 
 	return aprPercentage, nil
 }

@@ -138,6 +138,7 @@ func (s *Server) initServices() error { // TODO: get pwd from secret manager
 		s.dbOperator.AutoMigrate(&db.CLBlock{})
 		s.dbOperator.AutoMigrate(&db.CLStakingEvent{})
 		s.dbOperator.AutoMigrate(&db.CLValidatorUptime{})
+		s.dbOperator.AutoMigrate(&db.CLValidatorVote{})
 		s.dbOperator.AutoMigrate(&db.ELBlock{})
 		s.dbOperator.AutoMigrate(&db.ELReward{})
 		s.dbOperator.AutoMigrate(&db.ELStakingEvent{})

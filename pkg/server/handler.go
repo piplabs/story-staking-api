@@ -351,109 +351,6 @@ func (s *Server) StakingValidatorsHandler() gin.HandlerFunc {
 			valAddrs = append(valAddrs, strings.ToLower(val.OperatorAddress))
 		}
 
-		clUptimes, err := db.GetCLValidatorUptimes(s.dbOperator, valAddrs...)
-		if err != nil {
-			logger.Error().Err(err).Msg("failed to get cl uptimes")
-			c.JSON(http.StatusOK, Response{
-				Code:  http.StatusInternalServerError,
-				Error: ErrInternalDataServiceError.Error(),
-			})
-			return
-		}
-
-		clUptimesMap := make(map[string]string)
-		for _, uptime := range clUptimes {
-			clUptimesMap[strings.ToLower(uptime.EVMAddress)] = decimal.NewFromInt(100).
-				Mul(decimal.NewFromInt(uptime.VoteCount)).
-				Div(decimal.NewFromInt(uptime.ActiveTo-uptime.ActiveFrom+1)).
-				Truncate(2).String() + "%"
-		}
-
-		validators := make([]StakingValidatorData, 0, len(stakingValidatorsResp.Msg.Validators))
-		for _, val := range stakingValidatorsResp.Msg.Validators {
-			commissionRate, err := decimal.NewFromString(val.Commission.CommissionRates.Rate)
-			if err != nil {
-				logger.Error().Err(err).Str("validator", val.OperatorAddress).Msg("failed to parse commission rate")
-				c.JSON(http.StatusOK, Response{
-					Code:  http.StatusInternalServerError,
-					Error: ErrInternalDataServiceError.Error(),
-				})
-				return
-			}
-
-			valAPR := sysAPR.Mul(decimal.NewFromInt(1).Sub(commissionRate))
-			// Locked token type has 0.5x APR
-			if val.SupportTokenType == 0 {
-				valAPR = valAPR.Div(decimal.NewFromInt(2))
-			}
-
-			validators = append(validators, StakingValidatorData{
-				ValidatorInfo: val,
-				Uptime:        clUptimesMap[strings.ToLower(val.OperatorAddress)],
-				APR:           valAPR.Truncate(2).String() + "%",
-			})
-		}
-
-		msg := StakingValidatorsData{
-			Validators: validators,
-			Pagination: stakingValidatorsResp.Msg.Pagination,
-		}
-
-		// Set to cache
-		_ = SetCachedData(s.ctx, s.cacheOperator, cache.ValidatorsKey(params), msg)
-
-		c.JSON(http.StatusOK, Response{
-			Code: http.StatusOK,
-			Msg:  msg,
-		})
-	}
-}
-
-func (s *Server) StakingValidatorsHandlerV2() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		logger := log.With().Str("handler", "StakingValidatorsHandler").Logger()
-
-		params := ParsePaginationParams(c)
-		if status := c.Query("status"); status != "" {
-			params["status"] = status
-		}
-
-		// Get from cache
-		cachedMsg, ok := GetCachedData[StakingValidatorsData](s.ctx, s.cacheOperator, cache.ValidatorsKey(params))
-		if ok {
-			c.JSON(http.StatusOK, Response{
-				Code: http.StatusOK,
-				Msg:  cachedMsg,
-			})
-			return
-		}
-
-		sysAPR, err := s.GetSystemAPRPercentage()
-		if err != nil {
-			logger.Error().Err(err).Msg("failed to get system apr")
-			c.JSON(http.StatusOK, Response{
-				Code:  http.StatusInternalServerError,
-				Error: ErrInternalAPIServiceError.Error(),
-			})
-			return
-		}
-
-		// Query from API and database
-		stakingValidatorsResp, err := GetStakingValidators(s.conf.Blockchain.StoryAPIEndpoint, params)
-		if err != nil {
-			logger.Error().Err(err).Msg("failed to get staking validators")
-			c.JSON(http.StatusOK, Response{
-				Code:  http.StatusInternalServerError,
-				Error: ErrInternalAPIServiceError.Error(),
-			})
-			return
-		}
-
-		valAddrs := make([]string, 0, len(stakingValidatorsResp.Msg.Validators))
-		for _, val := range stakingValidatorsResp.Msg.Validators {
-			valAddrs = append(valAddrs, strings.ToLower(val.OperatorAddress))
-		}
-
 		valVotes, err := db.GetCLValidatorsVotes(s.dbOperator, valAddrs...)
 		if err != nil {
 			logger.Error().Err(err).Msg("failed to get cl uptimes")
@@ -548,7 +445,7 @@ func (s *Server) StakingValidatorHandler() gin.HandlerFunc {
 
 		val := stakingValidatorResp.Msg.Validator
 
-		clUptimes, err := db.GetCLValidatorUptimes(s.dbOperator, valAddr)
+		valVotes, err := db.GetCLValidatorsVotes(s.dbOperator, valAddr)
 		if err != nil {
 			logger.Error().Err(err).Msg("failed to get cl uptimes")
 			c.JSON(http.StatusOK, Response{
@@ -559,10 +456,10 @@ func (s *Server) StakingValidatorHandler() gin.HandlerFunc {
 		}
 
 		clUptimesMap := make(map[string]string)
-		for _, uptime := range clUptimes {
-			clUptimesMap[strings.ToLower(uptime.EVMAddress)] = decimal.NewFromInt(100).
-				Mul(decimal.NewFromInt(uptime.VoteCount)).
-				Div(decimal.NewFromInt(uptime.ActiveTo-uptime.ActiveFrom+1)).
+		for valAddr, votes := range valVotes {
+			clUptimesMap[strings.ToLower(valAddr)] = decimal.NewFromInt(100).
+				Mul(decimal.NewFromInt(votes)).
+				Div(decimal.NewFromInt(util.UptimeWindow)).
 				Truncate(2).String() + "%"
 		}
 

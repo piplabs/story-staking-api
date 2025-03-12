@@ -137,7 +137,6 @@ func (s *Server) initServices() error { // TODO: get pwd from secret manager
 
 		s.dbOperator.AutoMigrate(&db.CLBlock{})
 		s.dbOperator.AutoMigrate(&db.CLStakingEvent{})
-		s.dbOperator.AutoMigrate(&db.CLValidatorUptime{})
 		s.dbOperator.AutoMigrate(&db.CLValidatorVote{})
 		s.dbOperator.AutoMigrate(&db.ELBlock{})
 		s.dbOperator.AutoMigrate(&db.ELReward{})
@@ -194,7 +193,6 @@ func (s *Server) setupStakingAPI() {
 		apiGroup.GET("/staking/pool", s.StakingPoolHandler())
 
 		apiGroup.GET("/staking/validators", s.StakingValidatorsHandler())
-		apiGroup.GET("/staking/validators/v2", s.StakingValidatorsHandlerV2())
 		apiGroup.GET("/staking/validators/:validator_address", s.StakingValidatorHandler())
 		apiGroup.GET("/staking/validators/:validator_address/delegations", s.StakingValidatorDelegationsHandler())
 		apiGroup.GET("/staking/validators/:validator_address/delegations/:delegator_address", s.StakingDelegationHandler())
@@ -249,12 +247,6 @@ func (s *Server) setupIndexers() error {
 		return err
 	}
 	s.indexers = append(s.indexers, clStakingEventIndexer)
-
-	clValidatorUptimeIndexer, err := indexer.NewCLValidatorUptimeIndexer(s.ctx, s.dbOperator, s.cacheOperator, s.conf.Blockchain.CometbftRPCEndpoint)
-	if err != nil {
-		return err
-	}
-	s.indexers = append(s.indexers, clValidatorUptimeIndexer)
 
 	clValidatorVoteIndexer, err := indexer.NewCLValidatorVoteIndexer(s.ctx, s.dbOperator, s.cacheOperator, s.conf.Blockchain.CometbftRPCEndpoint)
 	if err != nil {

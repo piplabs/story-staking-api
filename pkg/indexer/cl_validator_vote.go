@@ -80,7 +80,7 @@ func (c *CLValidatorVoteIndexer) Run() {
 					Str("indexer", c.Name()).
 					Int64("from", indexPoint.BlockHeight).
 					Int64("to", latestBlk.Block.Height).
-					Msg("index cl block failed")
+					Msg("index cl validator votes failed")
 			}
 		}
 	}
@@ -89,17 +89,17 @@ func (c *CLValidatorVoteIndexer) Run() {
 func (c *CLValidatorVoteIndexer) index(from, to int64) error {
 	start := from
 
-	validatorVotes := make([]*db.CLValidatorVote, 0)
 	for start <= to {
 		end := min(start+100, to)
 
+		validatorVotes := make([]*db.CLValidatorVote, 0)
 		for i := start; i <= end; i++ {
-			validatorVotes, err := c.fetchValidatorVotes(c.ctx, i)
+			valVotes, err := c.fetchValidatorVotes(c.ctx, i)
 			if err != nil {
 				return err
 			}
 
-			validatorVotes = append(validatorVotes, validatorVotes...)
+			validatorVotes = append(validatorVotes, valVotes...)
 		}
 
 		if err := db.BatchUpdateCLValidatorVotes(c.dbOperator, c.Name(), validatorVotes, end); err != nil {

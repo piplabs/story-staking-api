@@ -8,8 +8,8 @@ import (
 
 type CLValidatorVote struct {
 	ID          uint64 `gorm:"primarykey"`
-	Validator   string `gorm:"not null;column:validator;index:idx_cl_validator_vote_validator,priority:1,unique"` // To lower case
-	BlockHeight int64  `gorm:"not null;column:block_height;index:idx_cl_validator_vote_block_height,priority:2,unique"`
+	Validator   string `gorm:"not null;column:validator;index:idx_cl_validator_vote_validator_block_height,priority:1,unique"` // To lower case
+	BlockHeight int64  `gorm:"not null;column:block_height;index:idx_cl_validator_vote_validator_block_height,priority:2,unique"`
 }
 
 func (CLValidatorVote) TableName() string {

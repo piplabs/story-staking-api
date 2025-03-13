@@ -127,8 +127,22 @@ func (c *CLValidatorVoteIndexer) fetchValidatorVotes(ctx context.Context, height
 		return nil, err
 	}
 
+	if len(cometAddrToEVMAddr) != len(commitRes.Commit.Signatures) {
+		log.Warn().
+			Int("active_validators", len(cometAddrToEVMAddr)).
+			Int("signatures", len(commitRes.Commit.Signatures)).
+			Int64("height", height).
+			Msg("validator count mismatch signatures")
+	}
+
 	for _, sig := range commitRes.Commit.Signatures {
 		if !(sig.BlockIDFlag == types.BlockIDFlagCommit || sig.BlockIDFlag == types.BlockIDFlagNil) {
+			log.Warn().
+				Str("validator", sig.ValidatorAddress.String()).
+				Str("validator_evm_addr", cometAddrToEVMAddr[sig.ValidatorAddress.String()]).
+				Bytes("flag", []byte{byte(sig.BlockIDFlag)}).
+				Int64("height", height).
+				Msg("invalid signature flag")
 			continue
 		}
 

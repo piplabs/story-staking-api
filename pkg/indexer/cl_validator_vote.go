@@ -71,15 +71,17 @@ func (c *CLValidatorVoteIndexer) Run() {
 				continue
 			}
 
-			if indexPoint.BlockHeight+10 > latestBlk.Block.Height {
+			from, to := indexPoint.BlockHeight+1, latestBlk.Block.Height-IndexLag
+
+			if from+10 > to {
 				continue
 			}
 
-			if err := c.index(indexPoint.BlockHeight+1, latestBlk.Block.Height); err != nil {
+			if err := c.index(from, to); err != nil {
 				log.Error().Err(err).
 					Str("indexer", c.Name()).
-					Int64("from", indexPoint.BlockHeight).
-					Int64("to", latestBlk.Block.Height).
+					Int64("from", from).
+					Int64("to", to).
 					Msg("index cl validator votes failed")
 			}
 		}

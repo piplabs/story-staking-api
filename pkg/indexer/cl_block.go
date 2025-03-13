@@ -73,7 +73,7 @@ func (c *CLBlockIndexer) Run() {
 			if err := c.index(indexPoint.BlockHeight+1, latestBlk.Block.Height); err != nil {
 				log.Error().Err(err).
 					Str("indexer", c.Name()).
-					Int64("from", indexPoint.BlockHeight).
+					Int64("from", indexPoint.BlockHeight+1).
 					Int64("to", latestBlk.Block.Height).
 					Msg("index cl block failed")
 			}

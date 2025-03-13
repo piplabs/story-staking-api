@@ -74,7 +74,7 @@ func (e *ELBlockIndexer) Run() {
 			if err := e.index(indexPoint.BlockHeight+1, int64(latestBlkNum)); err != nil {
 				log.Error().Err(err).
 					Str("indexer", e.Name()).
-					Int64("from", indexPoint.BlockHeight).
+					Int64("from", indexPoint.BlockHeight+1).
 					Uint64("to", latestBlkNum).
 					Msg("index el block failed")
 			}

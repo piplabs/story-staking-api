@@ -138,10 +138,8 @@ func (c *CLValidatorVoteIndexer) fetchValidatorVotes(ctx context.Context, height
 	for _, sig := range commitRes.Commit.Signatures {
 		if !(sig.BlockIDFlag == types.BlockIDFlagCommit || sig.BlockIDFlag == types.BlockIDFlagNil) {
 			log.Warn().
-				Str("validator", sig.ValidatorAddress.String()).
-				Str("validator_evm_addr", cometAddrToEVMAddr[sig.ValidatorAddress.String()]).
-				Bytes("flag", []byte{byte(sig.BlockIDFlag)}).
 				Int64("height", height).
+				Bytes("flag", []byte{byte(sig.BlockIDFlag)}).
 				Msg("invalid signature flag")
 			continue
 		}

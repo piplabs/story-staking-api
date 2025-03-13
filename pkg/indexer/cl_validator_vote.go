@@ -128,7 +128,7 @@ func (c *CLValidatorVoteIndexer) fetchValidatorVotes(ctx context.Context, height
 	}
 
 	for _, sig := range commitRes.Commit.Signatures {
-		if sig.BlockIDFlag != types.BlockIDFlagCommit {
+		if !(sig.BlockIDFlag == types.BlockIDFlagCommit || sig.BlockIDFlag == types.BlockIDFlagNil) {
 			continue
 		}
 

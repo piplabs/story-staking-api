@@ -3,7 +3,7 @@ Thank you for considering making contributions to Story and related repositories
 
 ## Coding Guideline
 
-[Go coding guidelines](https://github.com/golang/go/wiki/CodeReviewComments)
+[Go coding guidelines](https://go.dev/wiki/CodeReviewComments)
 
 [Good commit messages](https://chris.beams.io/posts/git-commit/)
 
@@ -62,7 +62,7 @@ feel free to [file an issue](https://github.com/piplabs/story-staking-api/issues
 
 To make it easier for your PR to receive reviews, consider the reviewers will need you to:
 
-* follow [good coding guidelines](https://github.com/golang/go/wiki/CodeReviewComments).
+* follow [good coding guidelines](https://go.dev/wiki/CodeReviewComments).
 * write [good commit messages](https://chris.beams.io/posts/git-commit/).
 * break large changes into a logical series of smaller patches which individually make easily understandable changes, and in aggregate solve a broader issue.
 

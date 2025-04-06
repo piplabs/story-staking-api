@@ -138,6 +138,7 @@ func (s *Server) initServices() error { // TODO: get pwd from secret manager
 		s.dbOperator.AutoMigrate(&db.CLBlock{})
 		s.dbOperator.AutoMigrate(&db.CLStakingEvent{})
 		s.dbOperator.AutoMigrate(&db.CLValidatorVote{})
+		s.dbOperator.AutoMigrate(&db.CLTotalStake{})
 		s.dbOperator.AutoMigrate(&db.ELBlock{})
 		s.dbOperator.AutoMigrate(&db.ELReward{})
 		s.dbOperator.AutoMigrate(&db.ELStakingEvent{})
@@ -253,6 +254,12 @@ func (s *Server) setupIndexers() error {
 		return err
 	}
 	s.indexers = append(s.indexers, clValidatorVoteIndexer)
+
+	clTotalStakeIndexer, err := indexer.NewCLTotalStakeIndexer(s.ctx, s.dbOperator, s.conf.Blockchain.CometbftRPCEndpoint)
+	if err != nil {
+		return err
+	}
+	s.indexers = append(s.indexers, clTotalStakeIndexer)
 
 	elBlockIndexer, err := indexer.NewELBlockIndexer(s.ctx, s.dbOperator, s.cacheOperator, s.conf.Blockchain.GethRPCEndpoint)
 	if err != nil {

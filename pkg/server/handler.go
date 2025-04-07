@@ -310,9 +310,9 @@ func (s *Server) TotalStakeHandler() gin.HandlerFunc {
 
 		c.JSON(http.StatusOK, Response{
 			Code: http.StatusOK,
-			Msg: map[string]any{
-				"total_stake_amount": row.TotalStakeAmount,
-				"last_updated_time":  row.CreatedAt,
+			Msg: StakeAmountData{
+				TotalStakeAmount: row.TotalStakeAmount,
+				Timestamp:        row.CreatedAt,
 			},
 		})
 	}

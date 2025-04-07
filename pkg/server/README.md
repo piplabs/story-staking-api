@@ -161,6 +161,55 @@
 }
 ```
 
+### 5. Network Total Stake Amount
+
+[GET] `/api/staking/total_stake`
+
+#### Response
+
+- total_stake_amount: Latest network total stake amount.
+- timestamp: Latest update unix timestamp of total_stake_amount.
+
+```json
+{
+  "code": 200,
+  "msg": {
+    "total_stake_amount": "123456789000",
+    "timestamp": "1744005579"
+  },
+  "error": ""
+}
+```
+
+### 6. Network Total Stake Amount History
+
+[GET] `/api/staking/total_stake/history`
+
+#### Query Params
+
+| Name           | Type   | Example                                    | Required |
+|----------------|--------|--------------------------------------------|----------|
+| interval       | string | 1d(default), 7d, 30d, all                  | No       |
+
+#### Response
+
+- total_stake_amount_history: A list of total stake amount as well as update time.
+  - total_stake_amount: Network total stake amount.
+  - timestamp: Update unix timestamp of total_stake_amount.
+
+```json
+{
+  "code": 200,
+  "msg": {
+    "total_stake_amount_history": [
+      "total_stake_amount": "123456789000",
+      "timestamp": "1744005579"
+    ]
+  },
+  "error": ""
+}
+```
+
 ## Native Story API
 
 ### 1. Staking Params

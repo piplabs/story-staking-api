@@ -217,6 +217,11 @@ func (c *CLTotalStakeIndexer) getCLStakeChanges(from, to int64) ([]*CLStakeChang
 
 			attrMap := attrArray2Map(e.Attributes)
 
+			if attrMap[AttributeKeyAmount] == "" {
+				// singularity period
+				continue
+			}
+
 			amount, err := strconv.ParseInt(attrMap[AttributeKeyAmount], 10, 64)
 			if err != nil {
 				return nil, fmt.Errorf("parse amount %s failed: %w", attrMap[AttributeKeyAmount], err)

@@ -308,11 +308,21 @@ func (s *Server) TotalStakeHandler() gin.HandlerFunc {
 			return
 		}
 
+		indexPointTime, err := db.GetIndexPointTime(s.dbOperator, "cl_total_stake")
+		if err != nil {
+			logger.Error().Err(err).Msg("failed to get index point time")
+			c.JSON(http.StatusOK, Response{
+				Code:  http.StatusInternalServerError,
+				Error: ErrInternalDataServiceError.Error(),
+			})
+			return
+		}
+
 		c.JSON(http.StatusOK, Response{
 			Code: http.StatusOK,
-			Msg: StakeAmountData{
-				TotalStakeAmount: row.TotalStakeAmount,
-				Timestamp:        row.CreatedAt,
+			Msg: map[string]any{
+				"total_stake_amount": row.TotalStakeAmount,
+				"last_update_time":   indexPointTime.Unix(),
 			},
 		})
 	}
@@ -351,7 +361,7 @@ func (s *Server) TotalStakeHistoryHandler() gin.HandlerFunc {
 
 		var stakeHistory []StakeAmountData
 		// Get the last amount before the period
-		if Interval(interval) == IntervalAllTime {
+		if Interval(interval) != IntervalAllTime {
 			row, err := db.GetLatestCLTotalStakeBefore(s.dbOperator, startTime.Unix())
 			if err != nil {
 				logger.Error().Err(err).Msg("failed to get latest cl total stake before period")
@@ -363,7 +373,7 @@ func (s *Server) TotalStakeHistoryHandler() gin.HandlerFunc {
 			}
 			stakeHistory = append(stakeHistory, StakeAmountData{
 				TotalStakeAmount: row.TotalStakeAmount,
-				Timestamp:        row.CreatedAt,
+				UpdateAt:         row.UpdateAt,
 			})
 		}
 		// Get all amount updates after the start time
@@ -380,7 +390,7 @@ func (s *Server) TotalStakeHistoryHandler() gin.HandlerFunc {
 			for _, row := range rows {
 				stakeHistory = append(stakeHistory, StakeAmountData{
 					TotalStakeAmount: row.TotalStakeAmount,
-					Timestamp:        row.CreatedAt,
+					UpdateAt:         row.UpdateAt,
 				})
 			}
 		} else {
@@ -396,7 +406,7 @@ func (s *Server) TotalStakeHistoryHandler() gin.HandlerFunc {
 			for _, row := range rows {
 				stakeHistory = append(stakeHistory, StakeAmountData{
 					TotalStakeAmount: row.TotalStakeAmount,
-					Timestamp:        row.CreatedAt,
+					UpdateAt:         row.UpdateAt,
 				})
 			}
 		}

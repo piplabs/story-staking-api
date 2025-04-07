@@ -168,14 +168,14 @@
 #### Response
 
 - total_stake_amount: Latest network total stake amount.
-- timestamp: Latest update unix timestamp of total_stake_amount.
+- last_update_time: Latest update unix timestamp of total_stake_amount.
 
 ```json
 {
   "code": 200,
   "msg": {
     "total_stake_amount": "123456789000",
-    "timestamp": "1744005579"
+    "last_update_time": "1744005579"
   },
   "error": ""
 }
@@ -195,7 +195,7 @@
 
 - total_stake_amount_history: A list of total stake amount as well as update time.
   - total_stake_amount: Network total stake amount.
-  - timestamp: Update unix timestamp of total_stake_amount.
+  - update_at: Update unix timestamp of total_stake_amount.
 
 ```json
 {
@@ -203,7 +203,7 @@
   "msg": {
     "total_stake_amount_history": [
       "total_stake_amount": "123456789000",
-      "timestamp": "1744005579"
+      "update_at": "1744005579"
     ]
   },
   "error": ""

@@ -53,5 +53,5 @@ type StakingValidatorsData struct {
 
 type StakeAmountData struct {
 	TotalStakeAmount int64 `json:"total_stake_amount"`
-	Timestamp        int64 `json:"timestamp"`
+	UpdateAt         int64 `json:"update_at"`
 }

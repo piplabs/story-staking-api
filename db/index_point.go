@@ -1,6 +1,8 @@
 package db
 
 import (
+	"time"
+
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -29,6 +31,20 @@ func GetIndexPoint(db *gorm.DB, indexer string) (*IndexPoint, error) {
 	}
 
 	return &indexPoint, nil
+}
+
+func GetIndexPointTime(db *gorm.DB, indexer string) (time.Time, error) {
+	var blockTime time.Time
+
+	if err := db.Table("index_points").
+		Select("cl_blocks.time").
+		Joins("join cl_blocks on cl_blocks.height = index_points.block_height").
+		Where("index_points.indexer = ?", indexer).
+		Scan(&blockTime).Error; err != nil {
+		return time.Time{}, err
+	}
+
+	return blockTime, nil
 }
 
 func UpdateIndexPoint(db *gorm.DB, indexer string, blockHeight int64) error {

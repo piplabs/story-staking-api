@@ -133,7 +133,7 @@ func (c *CLTotalStakeIndexer) init() error {
 func (c *CLTotalStakeIndexer) index(from, to int64) error {
 	start := from
 	for start <= to {
-		end := min(start+1000, to)
+		end := min(start+100, to)
 
 		if err := c.applyStakeChanges(start, end); err != nil {
 			return err

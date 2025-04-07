@@ -131,10 +131,6 @@ func (s *Server) initServices() error { // TODO: get pwd from secret manager
 
 	// Setup database states and indexers for `writer` mode.
 	if s.conf.Server.IndexMode == IndexModeWriter {
-		if err := s.setupIndexers(); err != nil {
-			return err
-		}
-
 		s.dbOperator.AutoMigrate(&db.CLBlock{})
 		s.dbOperator.AutoMigrate(&db.CLStakingEvent{})
 		s.dbOperator.AutoMigrate(&db.CLValidatorVote{})
@@ -143,6 +139,10 @@ func (s *Server) initServices() error { // TODO: get pwd from secret manager
 		s.dbOperator.AutoMigrate(&db.ELReward{})
 		s.dbOperator.AutoMigrate(&db.ELStakingEvent{})
 		s.dbOperator.AutoMigrate(&db.IndexPoint{})
+
+		if err := s.setupIndexers(); err != nil {
+			return err
+		}
 
 		// Initialize genesis index points.
 		for _, indexer := range s.indexers {

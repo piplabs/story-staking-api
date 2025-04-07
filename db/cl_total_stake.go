@@ -8,8 +8,8 @@ import (
 type CLTotalStake struct {
 	ID uint64 `gorm:"primarykey"`
 
-	CreatedAt        int64 `gorm:"not null;column:created_at;index:idx_cl_created_at_total_stake_amount,priority:1"`
-	TotalStakeAmount int64 `gorm:"not null;column:total_stake_amount;index:idx_cl_created_at_total_stake_amount,priority:2"`
+	CreatedAt        int64 `gorm:"not null;column:created_at;index:idx_cl_total_stake_created_at,unique"`
+	TotalStakeAmount int64 `gorm:"not null;column:total_stake_amount"`
 }
 
 func (CLTotalStake) TableName() string {

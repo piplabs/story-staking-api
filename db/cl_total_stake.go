@@ -26,6 +26,36 @@ func GetLatestCLTotalStake(db *gorm.DB) (*CLTotalStake, error) {
 	return &stake, nil
 }
 
+func GetCLTotalStakes(db *gorm.DB) ([]*CLTotalStake, error) {
+	var stakes []*CLTotalStake
+
+	if err := db.Order("created_at ASC").Find(&stakes).Error; err != nil {
+		return nil, err
+	}
+
+	return stakes, nil
+}
+
+func GetLatestCLTotalStakeBefore(db *gorm.DB, timestamp int64) (*CLTotalStake, error) {
+	var stake CLTotalStake
+
+	if err := db.Where("created_at <= ?", timestamp).Order("created_at DESC").First(&stake).Error; err != nil {
+		return nil, err
+	}
+
+	return &stake, nil
+}
+
+func GetCLTotalStakesAfter(db *gorm.DB, timestamp int64) ([]*CLTotalStake, error) {
+	var stakes []*CLTotalStake
+
+	if err := db.Where("created_at > ?", timestamp).Order("created_at ASC").Find(&stakes).Error; err != nil {
+		return nil, err
+	}
+
+	return stakes, nil
+}
+
 func InsertCLTotalStake(db *gorm.DB, indexer string, stake *CLTotalStake) error {
 	return db.Transaction(func(tx *gorm.DB) error {
 		if err := tx.Clauses(clause.OnConflict{

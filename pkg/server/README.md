@@ -4,6 +4,8 @@
   - [2. Estimated APR](#2-estimated-apr)
   - [3. Operation History](#3-operation-history)
   - [4. Delegator Accumulated Rewards](#4-delegator-accumulated-rewards)
+  - [5. Network Total Stake Amount](#5-network-total-stake-amount)
+  - [6. Network Total Stake Amount History](#6-network-total-stake-amount-history)
 - [Native Story API](#native-story-api)
   - [1. Staking Params](#1-staking-params)
   - [2. Staking Pool](#2-staking-pool)

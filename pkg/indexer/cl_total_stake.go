@@ -23,8 +23,8 @@ const (
 
 	clUnbondingPeriod = 1209600 * time.Second // 14 days
 
-	matureStakeEventType   = "delegate_success"
-	matureUnstakeEventType = "complete_unbonding"
+	stakeEventType   = "delegate_success"
+	unstakeEventType = "undelegate_success"
 )
 
 var _ Indexer = (*CLTotalStakeIndexer)(nil)
@@ -114,7 +114,7 @@ func (c *CLTotalStakeIndexer) init() error {
 	}
 
 	if err := db.InsertCLTotalStake(c.dbOperator, c.Name(), &db.CLTotalStake{
-		CreatedAt:        gt.Unix(),
+		UpdateAt:         gt.Unix(),
 		TotalStakeAmount: genesisStakeAmount,
 	}); err != nil {
 		return fmt.Errorf("upsert cl total stake failed: %w", err)
@@ -133,7 +133,7 @@ func (c *CLTotalStakeIndexer) init() error {
 func (c *CLTotalStakeIndexer) index(from, to int64) error {
 	start := from
 	for start <= to {
-		end := min(start+100, to)
+		end := min(start+1000, to)
 
 		if err := c.applyStakeChanges(start, end); err != nil {
 			return err
@@ -183,7 +183,7 @@ func (c *CLTotalStakeIndexer) applyStakeChanges(from, to int64) error {
 		}
 
 		rows = append(rows, &db.CLTotalStake{
-			CreatedAt:        blockTime.Unix(),
+			UpdateAt:         blockTime.Unix(),
 			TotalStakeAmount: c.latestTotalStakeAmount,
 		})
 	}
@@ -211,7 +211,7 @@ func (c *CLTotalStakeIndexer) getCLStakeChanges(from, to int64) ([]*CLStakeChang
 		blockEvents = append(blockEvents, blockResults.FinalizeBlockEvents...)
 
 		for _, e := range blockEvents {
-			if !(e.Type == matureStakeEventType || e.Type == matureUnstakeEventType) {
+			if !(e.Type == stakeEventType || e.Type == unstakeEventType) {
 				continue
 			}
 
@@ -221,7 +221,7 @@ func (c *CLTotalStakeIndexer) getCLStakeChanges(from, to int64) ([]*CLStakeChang
 			if err != nil {
 				return nil, fmt.Errorf("parse amount %s failed: %w", attrMap[AttributeKeyAmount], err)
 			}
-			if e.Type == matureUnstakeEventType {
+			if e.Type == unstakeEventType {
 				amount *= -1
 			}
 

@@ -4,6 +4,8 @@
   - [2. Estimated APR](#2-estimated-apr)
   - [3. Operation History](#3-operation-history)
   - [4. Delegator Accumulated Rewards](#4-delegator-accumulated-rewards)
+  - [5. Network Total Stake Amount](#5-network-total-stake-amount)
+  - [6. Network Total Stake Amount History](#6-network-total-stake-amount-history)
 - [Native Story API](#native-story-api)
   - [1. Staking Params](#1-staking-params)
   - [2. Staking Pool](#2-staking-pool)
@@ -154,6 +156,55 @@
     "address": "0x64a2fdc6f7cd8aa42e0bb59bf80bc47bffbe4a73",
     "amount": "450275716080",
     "last_update_height": 216
+  },
+  "error": ""
+}
+```
+
+### 5. Network Total Stake Amount
+
+[GET] `/api/staking/total_stake`
+
+#### Response
+
+- total_stake_amount: Latest network total stake amount.
+- timestamp: Latest update unix timestamp of total_stake_amount.
+
+```json
+{
+  "code": 200,
+  "msg": {
+    "total_stake_amount": "123456789000",
+    "timestamp": "1744005579"
+  },
+  "error": ""
+}
+```
+
+### 6. Network Total Stake Amount History
+
+[GET] `/api/staking/total_stake/history`
+
+#### Query Params
+
+| Name           | Type   | Example                                    | Required |
+|----------------|--------|--------------------------------------------|----------|
+| interval       | string | 1d(default), 7d, 30d, all                  | No       |
+
+#### Response
+
+- total_stake_amount_history: A list of total stake amount as well as update time.
+  - total_stake_amount: Network total stake amount.
+  - timestamp: Update unix timestamp of total_stake_amount.
+
+```json
+{
+  "code": 200,
+  "msg": {
+    "total_stake_amount_history": [
+      "total_stake_amount": "123456789000",
+      "timestamp": "1744005579"
+    ]
   },
   "error": ""
 }

@@ -36,3 +36,13 @@ func GetLatestCLBlock(db *gorm.DB) (*CLBlock, error) {
 
 	return &clBlk, nil
 }
+
+func GetCLBlocks(db *gorm.DB, heights []int64) ([]*CLBlock, error) {
+	clBlocks := make([]*CLBlock, 0)
+
+	if err := db.Where("height IN (?)", heights).Find(&clBlocks).Error; err != nil {
+		return nil, err
+	}
+
+	return clBlocks, nil
+}

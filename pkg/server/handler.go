@@ -17,6 +17,15 @@ import (
 	"github.com/piplabs/story-staking-api/pkg/util"
 )
 
+type Interval string
+
+const (
+	IntervalOneDay     Interval = "1d"
+	IntervalSevenDays  Interval = "7d"
+	IntervalThirtyDays Interval = "30d"
+	IntervalAllTime    Interval = "all"
+)
+
 func (s *Server) GetSystemAPRPercentage() (decimal.Decimal, error) {
 	distParamsResp, err := GetDistributionParams(s.conf.Blockchain.StoryAPIEndpoint)
 	if err != nil {
@@ -281,6 +290,132 @@ func (s *Server) RewardsHandler() gin.HandlerFunc {
 		c.JSON(http.StatusOK, Response{
 			Code: http.StatusOK,
 			Msg:  msg,
+		})
+	}
+}
+
+func (s *Server) TotalStakeHandler() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		logger := log.With().Str("handler", "TotalStakeHandler").Logger()
+
+		row, err := db.GetLatestCLTotalStake(s.dbOperator)
+		if err != nil {
+			logger.Error().Err(err).Msg("failed to get latest cl total stake")
+			c.JSON(http.StatusOK, Response{
+				Code:  http.StatusInternalServerError,
+				Error: ErrInternalDataServiceError.Error(),
+			})
+			return
+		}
+
+		indexPointTime, err := db.GetIndexPointTime(s.dbOperator, "cl_total_stake")
+		if err != nil {
+			logger.Error().Err(err).Msg("failed to get index point time")
+			c.JSON(http.StatusOK, Response{
+				Code:  http.StatusInternalServerError,
+				Error: ErrInternalDataServiceError.Error(),
+			})
+			return
+		}
+
+		c.JSON(http.StatusOK, Response{
+			Code: http.StatusOK,
+			Msg: map[string]any{
+				"total_stake_amount": row.TotalStakeAmount,
+				"last_update_time":   indexPointTime.Unix(),
+			},
+		})
+	}
+}
+
+func (s *Server) TotalStakeHistoryHandler() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		logger := log.With().Str("handler", "TotalStakeHistoryHandler").Logger()
+
+		interval := c.Query("interval")
+		if interval == "" {
+			interval = string(IntervalOneDay)
+		}
+
+		var (
+			startTime   time.Time
+			currentTime = time.Now()
+		)
+		switch Interval(interval) {
+		case IntervalOneDay:
+			startTime = currentTime.AddDate(0, 0, -1)
+		case IntervalSevenDays:
+			startTime = currentTime.AddDate(0, 0, -7)
+		case IntervalThirtyDays:
+			startTime = currentTime.AddDate(0, 0, -30)
+		case IntervalAllTime:
+			// no filter needed
+		default:
+			logger.Error().Str("interval", interval).Msg("invalid interval")
+			c.JSON(http.StatusOK, Response{
+				Code:  http.StatusBadRequest,
+				Error: ErrInvalidParameter.Error(),
+			})
+			return
+		}
+
+		var stakeHistory []StakeAmountData
+		// Get the last amount before the period
+		if Interval(interval) != IntervalAllTime {
+			row, err := db.GetLatestCLTotalStakeBefore(s.dbOperator, startTime.Unix())
+			if err != nil {
+				logger.Error().Err(err).Msg("failed to get latest cl total stake before period")
+				c.JSON(http.StatusOK, Response{
+					Code:  http.StatusInternalServerError,
+					Error: ErrInternalDataServiceError.Error(),
+				})
+				return
+			}
+			stakeHistory = append(stakeHistory, StakeAmountData{
+				TotalStakeAmount: row.TotalStakeAmount,
+				UpdateAt:         row.UpdateAt,
+			})
+		}
+		// Get all amount updates after the start time
+		if Interval(interval) == IntervalAllTime {
+			rows, err := db.GetCLTotalStakes(s.dbOperator)
+			if err != nil {
+				logger.Error().Err(err).Msg("failed to get all cl total stakes")
+				c.JSON(http.StatusOK, Response{
+					Code:  http.StatusInternalServerError,
+					Error: ErrInternalDataServiceError.Error(),
+				})
+				return
+			}
+			for _, row := range rows {
+				stakeHistory = append(stakeHistory, StakeAmountData{
+					TotalStakeAmount: row.TotalStakeAmount,
+					UpdateAt:         row.UpdateAt,
+				})
+			}
+		} else {
+			rows, err := db.GetCLTotalStakesAfter(s.dbOperator, startTime.Unix())
+			if err != nil {
+				logger.Error().Err(err).Msg("failed to get cl total stakes within period")
+				c.JSON(http.StatusOK, Response{
+					Code:  http.StatusInternalServerError,
+					Error: ErrInternalDataServiceError.Error(),
+				})
+				return
+			}
+			for _, row := range rows {
+				stakeHistory = append(stakeHistory, StakeAmountData{
+					TotalStakeAmount: row.TotalStakeAmount,
+					UpdateAt:         row.UpdateAt,
+				})
+			}
+		}
+
+		c.JSON(http.StatusOK, Response{
+			Code: http.StatusOK,
+			Msg: map[string]any{
+				"total_stake_amount_history": stakeHistory,
+			},
 		})
 	}
 }

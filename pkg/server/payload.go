@@ -50,3 +50,8 @@ type StakingValidatorsData struct {
 	Validators []StakingValidatorData `json:"validators"`
 	Pagination Pagination             `json:"pagination"`
 }
+
+type StakeAmountData struct {
+	TotalStakeAmount int64 `json:"total_stake_amount"`
+	UpdateAt         int64 `json:"update_at"`
+}

@@ -9,6 +9,7 @@ import (
 	"github.com/BurntSushi/toml"
 	kingpin "github.com/alecthomas/kingpin/v2"
 	"github.com/rs/zerolog/log"
+	_ "go.uber.org/automaxprocs"
 
 	"github.com/piplabs/story-staking-api/pkg/server"
 )

@@ -134,7 +134,6 @@ func (s *Server) initServices() error { // TODO: get pwd from secret manager
 		s.dbOperator.AutoMigrate(&db.CLBlock{})
 		s.dbOperator.AutoMigrate(&db.CLStakingEvent{})
 		s.dbOperator.AutoMigrate(&db.CLValidatorVote{})
-		s.dbOperator.AutoMigrate(&db.CLTotalStake{})
 		s.dbOperator.AutoMigrate(&db.CLTotalStakeHist{})
 		s.dbOperator.AutoMigrate(&db.ELBlock{})
 		s.dbOperator.AutoMigrate(&db.ELReward{})
@@ -191,7 +190,6 @@ func (s *Server) setupStakingAPI() {
 		apiGroup.GET("/rewards/:evm_address", s.RewardsHandler())
 		apiGroup.GET("/staking/total_stake", s.TotalStakeHandler())
 		apiGroup.GET("/staking/total_stake/history", s.TotalStakeHistoryHandler())
-		apiGroup.GET("/staking/total_stake/history/v2", s.TotalStakeHistoryHandlerV2())
 		// Proxy to Story API.
 		apiGroup.GET("/staking/params", s.StakingParamsHandler())
 
@@ -258,12 +256,6 @@ func (s *Server) setupIndexers() error {
 		return err
 	}
 	s.indexers = append(s.indexers, clValidatorVoteIndexer)
-
-	clTotalStakeIndexer, err := indexer.NewCLTotalStakeIndexer(s.ctx, s.dbOperator, s.conf.Blockchain.CometbftRPCEndpoint)
-	if err != nil {
-		return err
-	}
-	s.indexers = append(s.indexers, clTotalStakeIndexer)
 
 	clTotalStakeHistIndexer, err := indexer.NewCLTotalStakeHistIndexer(s.ctx, s.dbOperator)
 	if err != nil {

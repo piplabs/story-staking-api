@@ -95,6 +95,7 @@ func (c *CLTotalStakeHistIndexer) index() error {
 	for _, event := range events {
 		amount, err := strconv.ParseInt(event.Amount, 10, 64)
 		if err != nil {
+			log.Error().Err(err).Msgf("event info %+v", event)
 			return fmt.Errorf("parse amount %s failed: %w", event.Amount, err)
 		}
 

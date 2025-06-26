@@ -203,7 +203,7 @@ func (c *CLStakingEventIndexer) getStakingEvents(from, to int64) ([]*db.CLStakin
 					return nil, fmt.Errorf("event %s: sender address not found", eventType)
 				}
 
-				if strings.ToLower(delAddr) != strings.ToLower(senderAddr) {
+				if !strings.EqualFold(delAddr, senderAddr) {
 					eventType = EventType2Behalf[eventType]
 				}
 			case TypeUnjail:
@@ -225,7 +225,7 @@ func (c *CLStakingEventIndexer) getStakingEvents(from, to int64) ([]*db.CLStakin
 					return nil, fmt.Errorf("convert validator compressed key to address from event %s failed: %w", eventType, err)
 				}
 
-				if strings.ToLower(valAddr.String()) != strings.ToLower(senderAddr) {
+				if !strings.EqualFold(valAddr.String(), senderAddr) {
 					eventType = EventType2Behalf[eventType]
 				}
 			}

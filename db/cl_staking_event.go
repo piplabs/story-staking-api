@@ -1,6 +1,11 @@
 package db
 
-import "gorm.io/gorm"
+import (
+	"errors"
+	"time"
+
+	"gorm.io/gorm"
+)
 
 type CLStakingEvent struct {
 	ID          uint64 `gorm:"primarykey"`
@@ -10,6 +15,11 @@ type CLStakingEvent struct {
 	StatusOK    bool   `gorm:"not null;column:status_ok"`
 	ErrorCode   string `gorm:"not null;column:error_code"`
 	Amount      string `gorm:"not null;column:amount"`
+}
+
+type CLSuccessfulStakingEvent struct {
+	CLStakingEvent
+	BlockTime time.Time `gorm:"not null;column:block_time"`
 }
 
 func (CLStakingEvent) TableName() string {
@@ -24,4 +34,23 @@ func BatchCreateCLStakingEvents(db *gorm.DB, indexer string, events []*CLStaking
 
 		return UpdateIndexPoint(tx, indexer, height)
 	})
+}
+
+func GetSuccessfulCLStakingEventsAfter(db *gorm.DB, eventTypes []string, blockHeight int64) ([]*CLSuccessfulStakingEvent, error) {
+	var events []*CLSuccessfulStakingEvent
+
+	if err := db.
+		Table("cl_staking_events AS e").
+		Joins("JOIN cl_blocks AS b ON e.block_height = b.height").
+		Select("e.*, b.time AS block_time").
+		Where("e.event_type IN (?)", eventTypes).
+		Where("e.status_ok = ?", true).
+		Where("e.block_height > ?", blockHeight).
+		Scan(&events).Error; errors.Is(err, gorm.ErrRecordNotFound) {
+		return events, nil
+	} else if err != nil {
+		return nil, err
+	}
+
+	return events, nil
 }

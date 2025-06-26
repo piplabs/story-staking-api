@@ -14,7 +14,11 @@ import (
 )
 
 const (
+	genesisStakeAmount = 8000000 // gwei
+
 	genesisBlockHeight = 1
+	genesisTime        = "2025-01-19T15:00:00.00000000Z"
+	timeLayout         = "2006-01-02T15:04:05.999999999Z"
 )
 
 var _ Indexer = (*CLTotalStakeHistIndexer)(nil)

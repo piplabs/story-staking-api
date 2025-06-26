@@ -41,9 +41,9 @@ func GetSuccessfulCLStakingEventsAfter(db *gorm.DB, eventTypes []string, blockHe
 
 	if err := db.
 		Table("cl_staking_events AS e").
-		Select("e.*, b.time AS block_time").
 		Joins("JOIN cl_blocks AS b ON e.block_height = b.height").
-		Where("e.event_type IN ?", eventTypes).
+		Select("e.*, b.time AS block_time").
+		Where("e.event_type IN (?)", eventTypes).
 		Where("e.status_ok = ?", true).
 		Where("e.block_height > ?", blockHeight).
 		Scan(&events).Error; errors.Is(err, gorm.ErrRecordNotFound) {

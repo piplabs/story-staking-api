@@ -420,6 +420,98 @@ func (s *Server) TotalStakeHistoryHandler() gin.HandlerFunc {
 	}
 }
 
+func (s *Server) TotalStakeHistoryHandlerV2() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		logger := log.With().Str("handler", "TotalStakeHistoryHandlerV2").Logger()
+
+		interval := c.Query("interval")
+		if interval == "" {
+			interval = string(IntervalOneDay)
+		}
+
+		var (
+			startTime   time.Time
+			currentTime = time.Now()
+		)
+		switch Interval(interval) {
+		case IntervalOneDay:
+			startTime = currentTime.AddDate(0, 0, -1)
+		case IntervalSevenDays:
+			startTime = currentTime.AddDate(0, 0, -7)
+		case IntervalThirtyDays:
+			startTime = currentTime.AddDate(0, 0, -30)
+		case IntervalAllTime:
+			// no filter needed
+		default:
+			logger.Error().Str("interval", interval).Msg("invalid interval")
+			c.JSON(http.StatusOK, Response{
+				Code:  http.StatusBadRequest,
+				Error: ErrInvalidParameter.Error(),
+			})
+			return
+		}
+
+		var stakeHistory []StakeAmountData
+		// Get the last amount before the period
+		if Interval(interval) != IntervalAllTime {
+			row, err := db.GetLatestCLTotalStakeHistBefore(s.dbOperator, startTime.Unix())
+			if err != nil {
+				logger.Error().Err(err).Msg("failed to get latest cl total stake before period")
+				c.JSON(http.StatusOK, Response{
+					Code:  http.StatusInternalServerError,
+					Error: ErrInternalDataServiceError.Error(),
+				})
+				return
+			}
+			stakeHistory = append(stakeHistory, StakeAmountData{
+				TotalStakeAmount: row.TotalStakeAmount,
+				UpdateAt:         row.UpdatedAtTime,
+			})
+		}
+		// Get all amount updates after the start time
+		if Interval(interval) == IntervalAllTime {
+			rows, err := db.GetCLTotalStakeHists(s.dbOperator)
+			if err != nil {
+				logger.Error().Err(err).Msg("failed to get all cl total stakes")
+				c.JSON(http.StatusOK, Response{
+					Code:  http.StatusInternalServerError,
+					Error: ErrInternalDataServiceError.Error(),
+				})
+				return
+			}
+			for _, row := range rows {
+				stakeHistory = append(stakeHistory, StakeAmountData{
+					TotalStakeAmount: row.TotalStakeAmount,
+					UpdateAt:         row.UpdatedAtTime,
+				})
+			}
+		} else {
+			rows, err := db.GetCLTotalStakeHistsAfter(s.dbOperator, startTime.Unix())
+			if err != nil {
+				logger.Error().Err(err).Msg("failed to get cl total stakes within period")
+				c.JSON(http.StatusOK, Response{
+					Code:  http.StatusInternalServerError,
+					Error: ErrInternalDataServiceError.Error(),
+				})
+				return
+			}
+			for _, row := range rows {
+				stakeHistory = append(stakeHistory, StakeAmountData{
+					TotalStakeAmount: row.TotalStakeAmount,
+					UpdateAt:         row.UpdatedAtTime,
+				})
+			}
+		}
+
+		c.JSON(http.StatusOK, Response{
+			Code: http.StatusOK,
+			Msg: map[string]any{
+				"total_stake_amount_history": stakeHistory,
+			},
+		})
+	}
+}
+
 func (s *Server) StakingPoolHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		logger := log.With().Str("handler", "StakingPoolHandler").Logger()

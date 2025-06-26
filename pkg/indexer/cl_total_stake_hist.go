@@ -91,7 +91,7 @@ func (c *CLTotalStakeHistIndexer) index() error {
 		return nil
 	}
 
-	blk2StakeChange := make(map[int64]int64)
+	blk2StakeChange, blk2BlockTime := make(map[int64]int64), make(map[int64]int64)
 	for _, event := range events {
 		var amount int64
 		if event.Amount == "" {
@@ -111,6 +111,8 @@ func (c *CLTotalStakeHistIndexer) index() error {
 		case TypeUnstake:
 			blk2StakeChange[event.BlockHeight] -= amount
 		}
+
+		blk2BlockTime[event.BlockHeight] = event.BlockTime.Unix()
 	}
 
 	type stakeChange struct {
@@ -119,11 +121,11 @@ func (c *CLTotalStakeHistIndexer) index() error {
 		StakeChangeAmount int64
 	}
 
-	scs := make([]*stakeChange, 0, len(blk2StakeChange))
+	scs := make([]*stakeChange, 0)
 	for blkno, amt := range blk2StakeChange {
 		scs = append(scs, &stakeChange{
 			BlockHeight:       blkno,
-			BlockTime:         events[blkno].BlockTime.Unix(),
+			BlockTime:         blk2BlockTime[blkno],
 			StakeChangeAmount: amt,
 		})
 	}

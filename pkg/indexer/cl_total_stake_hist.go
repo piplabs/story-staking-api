@@ -93,10 +93,16 @@ func (c *CLTotalStakeHistIndexer) index() error {
 
 	blk2StakeChange := make(map[int64]int64)
 	for _, event := range events {
-		amount, err := strconv.ParseInt(event.Amount, 10, 64)
-		if err != nil {
-			log.Error().Err(err).Msgf("event info %+v", event)
-			return fmt.Errorf("parse amount %s failed: %w", event.Amount, err)
+		var amount int64
+		if event.Amount == "" {
+			// special bypass for aeneid
+			amount = 0
+		} else {
+			amt, err := strconv.ParseInt(event.Amount, 10, 64)
+			if err != nil {
+				return fmt.Errorf("parse amount %s failed: %w", event.Amount, err)
+			}
+			amount = amt
 		}
 
 		switch event.EventType {

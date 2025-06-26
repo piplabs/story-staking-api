@@ -116,7 +116,7 @@ func (c *CLTotalStakeHistIndexer) index() error {
 	for blkno, amt := range blk2StakeChange {
 		scs = append(scs, &stakeChange{
 			BlockHeight:       blkno,
-			BlockTime:         events[blkno].BlockTime,
+			BlockTime:         events[blkno].BlockTime.Unix(),
 			StakeChangeAmount: amt,
 		})
 	}

@@ -2,6 +2,7 @@ package db
 
 import (
 	"errors"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -18,7 +19,7 @@ type CLStakingEvent struct {
 
 type CLSuccessfulStakingEvent struct {
 	CLStakingEvent
-	BlockTime int64 `gorm:"not null;column:block_time"`
+	BlockTime time.Time `gorm:"not null;column:block_time"`
 }
 
 func (CLStakingEvent) TableName() string {

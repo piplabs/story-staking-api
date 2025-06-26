@@ -191,7 +191,6 @@ func (s *Server) setupStakingAPI() {
 		apiGroup.GET("/rewards/:evm_address", s.RewardsHandler())
 		apiGroup.GET("/staking/total_stake", s.TotalStakeHandler())
 		apiGroup.GET("/staking/total_stake/history", s.TotalStakeHistoryHandler())
-		apiGroup.GET("/staking/total_stake/history/v2", s.TotalStakeHistoryHandlerV2())
 		// Proxy to Story API.
 		apiGroup.GET("/staking/params", s.StakingParamsHandler())
 
